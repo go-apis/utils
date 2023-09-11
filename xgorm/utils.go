@@ -5,24 +5,13 @@ import (
 	"fmt"
 
 	"github.com/jackc/pgx/v5"
-	"github.com/uptrace/opentelemetry-go-extra/otelgorm"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/plugin/opentelemetry/tracing"
 )
 
 func open(dsn string, options *Options) (*gorm.DB, error) {
-	plugins := map[string]gorm.Plugin{}
-	if options.Tracing {
-		p := otelgorm.NewPlugin()
-		plugins[p.Name()] = p
-	}
-
-	cfg := &gorm.Config{
-		Logger:  options.Logger,
-		Plugins: plugins,
-	}
-
-	db, err := gorm.Open(postgres.Open(dsn), cfg)
+	db, err := gorm.Open(postgres.Open(dsn))
 	if err != nil {
 		return nil, err
 	}
@@ -31,6 +20,15 @@ func open(dsn string, options *Options) (*gorm.DB, error) {
 		if err := db.AutoMigrate(options.Models...); err != nil {
 			return nil, err
 		}
+	}
+
+	if options.Tracing {
+		if err := db.Use(tracing.NewPlugin()); err != nil {
+			return nil, err
+		}
+	}
+	if options.Logger != nil {
+		db.Logger = options.Logger
 	}
 
 	return db, nil
