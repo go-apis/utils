@@ -3,10 +3,6 @@ package internal
 import (
 	"context"
 	"net/http"
-
-	metrics "github.com/slok/go-http-metrics/metrics/prometheus"
-	"github.com/slok/go-http-metrics/middleware"
-	"github.com/slok/go-http-metrics/middleware/std"
 )
 
 type standard struct {
@@ -23,17 +19,6 @@ func (s *standard) Start(ctx context.Context) error {
 
 func (s *standard) Shutdown(ctx context.Context) error {
 	return s.server.Shutdown(ctx)
-}
-
-func WithMetricsRecorder(h http.Handler) http.Handler {
-	// Create our middleware.
-	mdlw := middleware.New(middleware.Config{
-		Recorder: metrics.NewRecorder(metrics.Config{}),
-	})
-
-	// Wrap our main handler, we pass empty handler ID so the middleware
-	// the handler label from the URL.
-	return std.Handler("", mdlw, h)
 }
 
 func NewStandard(addr string, h http.Handler) Startable {

@@ -2,13 +2,12 @@ package internal
 
 import (
 	"context"
-	"fmt"
 
-	texporter "github.com/GoogleCloudPlatform/opentelemetry-operations-go/exporter/trace"
 	"github.com/contextcloud/goutils/xservice"
 	multierror "github.com/hashicorp/go-multierror"
 	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/exporters/zipkin"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
+	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/resource"
 	"go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
@@ -34,14 +33,11 @@ func (t *tracer) Shutdown(ctx context.Context) error {
 }
 
 func traceExporter(ctx context.Context, cfg xservice.TracingConfig) (trace.SpanExporter, error) {
-	switch cfg.Type {
-	case "zipkin":
-		return zipkin.New(cfg.Url)
-	case "gcp":
-		return texporter.New(texporter.WithProjectID(cfg.Url), texporter.WithContext(ctx))
-	default:
-		return nil, fmt.Errorf("unknown tracing exporter type: %s", cfg.Type)
-	}
+	exporter, err := otlptracegrpc.New(
+		ctx,
+		otlptracegrpc.WithEndpoint(cfg.Url),
+	)
+	return exporter, err
 }
 
 func NewTracer(ctx context.Context, cfg *xservice.ServiceConfig) Startable {
@@ -70,8 +66,15 @@ func NewTracer(ctx context.Context, cfg *xservice.ServiceConfig) Startable {
 	tp := trace.NewTracerProvider(
 		trace.WithBatcher(exp),
 		trace.WithResource(res),
+		// set the sampling rate based on the parent span to 60%
+		trace.WithSampler(trace.ParentBased(trace.TraceIDRatioBased(0.6))),
 	)
 	otel.SetTracerProvider(tp)
+	otel.SetTextMapPropagator(
+		propagation.NewCompositeTextMapPropagator(
+			propagation.TraceContext{}, // W3C Trace Context format; https://www.w3.org/TR/trace-context/
+		),
+	)
 
 	return &tracer{tp}
 }

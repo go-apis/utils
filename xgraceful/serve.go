@@ -3,7 +3,6 @@ package xgraceful
 import (
 	"context"
 	"log"
-	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -50,13 +49,13 @@ func run(ctx context.Context, s internal.Startable) {
 	<-serverCtx.Done()
 }
 
-func Serve(ctx context.Context, cfg *xservice.ServiceConfig, handler http.Handler) {
+func Serve(ctx context.Context, cfg *xservice.ServiceConfig, handler interface{}) {
 	multi := internal.NewMulti(
 		internal.NewZapLog(),
 		internal.NewTracer(ctx, cfg),
 		internal.NewMetrics(ctx, cfg),
 		internal.NewHealth(cfg.HealthAddr),
-		internal.NewStartable(cfg.SrvAddr, handler),
+		internal.NewStartable(cfg, handler),
 	)
 	run(ctx, multi)
 }

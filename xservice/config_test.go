@@ -38,10 +38,6 @@ func Test_It(t *testing.T) {
 		t.Error("cfg.Tracing.Enabled is not true")
 		return
 	}
-	if cfg.Tracing.Type != "jaeger" {
-		t.Error("cfg.Tracing.Type is not jaeger")
-		return
-	}
 	if cfg.Tracing.Url != "http://localhost:8080" {
 		t.Error("cfg.Tracing.Url is not http://localhost:8080")
 		return

@@ -17,26 +17,29 @@ func init() {
 
 type TracingConfig struct {
 	Enabled bool
-	Type    string
+	Url     string
+}
+type MetricsConfig struct {
+	Enabled bool
 	Url     string
 }
 
 type ServiceConfig struct {
-	Name        string
-	Version     string
-	SrvAddr     string
-	MetricsAddr string
-	HealthAddr  string
-	Tracing     TracingConfig
+	Name       string
+	Version    string
+	SrvAddr    string
+	HealthAddr string
+
+	Tracing TracingConfig
+	Metrics MetricsConfig
 }
 
 func newConfig() *ServiceConfig {
 	return &ServiceConfig{
-		Name:        "service",
-		Version:     "1.0.0",
-		SrvAddr:     ":8080",
-		MetricsAddr: ":8081",
-		HealthAddr:  ":8082",
+		Name:       "service",
+		Version:    "1.0.0",
+		SrvAddr:    ":8080",
+		HealthAddr: ":8082",
 	}
 }
 

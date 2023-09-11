@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+
+	"github.com/contextcloud/goutils/xservice"
 )
 
 type Startable interface {
@@ -11,13 +13,12 @@ type Startable interface {
 	Shutdown(ctx context.Context) error
 }
 
-func NewStartable(srvAddr string, h interface{}) Startable {
+func NewStartable(cfg *xservice.ServiceConfig, h interface{}) Startable {
 	switch start := h.(type) {
 	case Startable:
 		return start
 	case http.Handler:
-		handler := WithMetricsRecorder(start)
-		return NewStandard(srvAddr, handler)
+		return NewStandard(cfg.SrvAddr, start)
 	default:
 		panic(fmt.Errorf("unknown service type: %T", h))
 	}
