@@ -305,6 +305,8 @@ github.com/matttproud/golang_protobuf_extensions v1.0.4/go.mod h1:BSXmuO+STAnVfr
 github.com/miekg/dns v1.0.14/go.mod h1:W1PPwlIAgtquWBMBEV9nkV9Cazfe8ScdGz/Lj7v3Nrg=
 github.com/mitchellh/cli v1.0.0/go.mod h1:hNIlj7HEI86fIcpObd7a0FcrxTWetlwJDGcceTlRvqc=
 github.com/mitchellh/go-homedir v1.0.0/go.mod h1:SfyaCUpYCn1Vlf4IUYiD9fPX4A5wJrkLzIz1N1q0pr0=
+github.com/mitchellh/go-ps v1.0.0 h1:i6ampVEEF4wQFF+bkYfwYgY+F/uYJDktmvLPf7qIgjc=
+github.com/mitchellh/go-ps v1.0.0/go.mod h1:J4lOc8z8yJs6vUwklHw2XEIiT4z4C40KtWVN3nvg8Pg=
 github.com/mitchellh/go-testing-interface v1.0.0/go.mod h1:kRemZodwjscx+RGhAo8eIhFbs2+BFgRtFPeD/KE+zxI=
 github.com/mitchellh/gox v0.4.0/go.mod h1:Sd9lOJ0+aimLBi73mGofS1ycjY8lL3uZM3JPS42BGNg=
 github.com/mitchellh/iochan v1.0.0/go.mod h1:JwYml1nuB7xOzsp52dPpHFffvOCDupsG0QubkSMEySY=
@@ -400,6 +402,10 @@ github.com/uptrace/opentelemetry-go-extra/otelgorm v0.2.2 h1:ptBsJKjRXx46Qtw3h1C
 github.com/uptrace/opentelemetry-go-extra/otelgorm v0.2.2/go.mod h1:I31DilV6DKiHDUJBEP/Bou+UZeeNDz6LqZpJCTV9q/Y=
 github.com/uptrace/opentelemetry-go-extra/otelsql v0.2.2 h1:USRngIQppxeyb39XzkVHXwQesKK0+JSwnHE/1c7fgic=
 github.com/uptrace/opentelemetry-go-extra/otelsql v0.2.2/go.mod h1:1frv9RN1rlTq0jzCq+mVuEQisubZCQ4OU6S/8CaHzGY=
+github.com/uptrace/opentelemetry-go-extra/otelutil v0.2.2 h1:CNznWHkrbA6o1q2H/BsH4tIHf4zbKNtndeoV+AH8z0U=
+github.com/uptrace/opentelemetry-go-extra/otelutil v0.2.2/go.mod h1:7YSrHCmYPHIXjTWnKSU7EGT0TFEcm3WwSeQquwCGg38=
+github.com/uptrace/opentelemetry-go-extra/otelzap v0.2.2 h1:uyrW06oJi4iWvhjPLVfk4qrSP2Zm0AMozKKDmp6i4pE=
+github.com/uptrace/opentelemetry-go-extra/otelzap v0.2.2/go.mod h1:PMAs2dNxP55lgt6xu0if+Jasm6s+Xpmqn6ev1NyDfnI=
 github.com/xiang90/probing v0.0.0-20190116061207-43a291ad63a2/go.mod h1:UETIi67q53MR2AWcXfiuqkDkRtnGDLqkBTpCHuJHxtU=
 github.com/yuin/goldmark v1.1.25/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.1.27/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
@@ -441,6 +447,8 @@ go.uber.org/multierr v1.6.0/go.mod h1:cdWPpRnG4AhwMwsgIHip0KRBQjJy5kYEpYjJxpXp9i
 go.uber.org/multierr v1.7.0/go.mod h1:7EAYxJLBy9rStEaz58O2t4Uvip6FSURkq8/ppBp95ak=
 go.uber.org/multierr v1.10.0 h1:S0h4aNzvfcFsC3dRF1jLoaov7oRaKqRGC/pUEJ2yvPQ=
 go.uber.org/multierr v1.10.0/go.mod h1:20+QtiLqy0Nd6FdQB9TLXag12DsQkrbs3htMFfDN80Y=
+go.uber.org/multierr v1.11.0 h1:blXXJkSxSSfBVBlC76pxqeO+LN3aDfLQo+309xJstO0=
+go.uber.org/multierr v1.11.0/go.mod h1:20+QtiLqy0Nd6FdQB9TLXag12DsQkrbs3htMFfDN80Y=
 go.uber.org/zap v1.10.0/go.mod h1:vwi/ZaCAaUcBkycHslxD9B2zi4UTXhF60s6SWpuDF0Q=
 go.uber.org/zap v1.21.0/go.mod h1:wjWOCqI0f2ZZrJF/UufIOkiC8ii6tm1iqIsLo76RfJw=
 go.uber.org/zap v1.25.0 h1:4Hvk6GtkucQ790dqmj7l1eEnRdKm3k3ZUrUMS2d5+5c=

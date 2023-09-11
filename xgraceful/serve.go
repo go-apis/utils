@@ -52,6 +52,7 @@ func run(ctx context.Context, s internal.Startable) {
 
 func Serve(ctx context.Context, cfg *xservice.ServiceConfig, handler http.Handler) {
 	multi := internal.NewMulti(
+		internal.NewZapLog(),
 		internal.NewTracer(ctx, cfg),
 		internal.NewMetrics(ctx, cfg),
 		internal.NewHealth(cfg.HealthAddr),
