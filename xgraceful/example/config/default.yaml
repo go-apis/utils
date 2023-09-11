@@ -1,0 +1,4 @@
+tracing:
+  enabled: true
+  type: "zipkin"
+  url: "http://localhost:9411/api/v1/spans"
