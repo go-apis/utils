@@ -36,6 +36,7 @@ func traceExporter(ctx context.Context, cfg xservice.TracingConfig) (trace.SpanE
 	exporter, err := otlptracegrpc.New(
 		ctx,
 		otlptracegrpc.WithEndpoint(cfg.Url),
+		otlptracegrpc.WithInsecure(),
 	)
 	return exporter, err
 }

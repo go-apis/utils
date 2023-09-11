@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/contextcloud/goutils/xservice"
+
 	multierror "github.com/hashicorp/go-multierror"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc"
@@ -33,9 +34,14 @@ func (s *metricser) Shutdown(ctx context.Context) error {
 }
 
 func NewMetrics(ctx context.Context, cfg *xservice.ServiceConfig) Startable {
+	if !cfg.Metrics.Enabled {
+		return nil
+	}
+
 	exporter, err := otlpmetricgrpc.New(
 		ctx,
 		otlpmetricgrpc.WithEndpoint(cfg.Metrics.Url),
+		otlpmetricgrpc.WithInsecure(),
 	)
 	if err != nil {
 		panic(err)
