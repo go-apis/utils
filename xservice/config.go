@@ -25,7 +25,7 @@ type MetricsConfig struct {
 }
 
 type ServiceConfig struct {
-	Name       string
+	Service    string
 	Version    string
 	SrvAddr    string
 	HealthAddr string
@@ -36,7 +36,7 @@ type ServiceConfig struct {
 
 func newConfig() *ServiceConfig {
 	return &ServiceConfig{
-		Name:       "service",
+		Service:    "service",
 		Version:    "1.0.0",
 		SrvAddr:    ":8080",
 		HealthAddr: ":8082",

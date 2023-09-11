@@ -42,7 +42,7 @@ func Test_It(t *testing.T) {
 		t.Error("cfg.Tracing.Url is not http://localhost:8080")
 		return
 	}
-	if cfg.Name != "service" {
+	if cfg.Service != "service" {
 		t.Error("cfg.ServiceName is not service")
 		return
 	}

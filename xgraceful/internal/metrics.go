@@ -52,7 +52,7 @@ func NewMetrics(ctx context.Context, cfg *xservice.ServiceConfig) Startable {
 		resource.WithTelemetrySDK(),
 		// Add your own custom attributes to identify your application
 		resource.WithAttributes(
-			semconv.ServiceNameKey.String(cfg.Name),
+			semconv.ServiceNameKey.String(cfg.Service),
 			semconv.ServiceVersionKey.String(cfg.Version),
 		),
 	)
