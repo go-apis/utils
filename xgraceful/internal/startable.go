@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/contextcloud/goutils/xservice"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 
 type Startable interface {
@@ -18,7 +19,8 @@ func NewStartable(cfg *xservice.ServiceConfig, h interface{}) Startable {
 	case Startable:
 		return start
 	case http.Handler:
-		return NewStandard(cfg.SrvAddr, start)
+		inner := otelhttp.NewHandler(start, cfg.Service)
+		return NewStandard(cfg.SrvAddr, inner)
 	default:
 		panic(fmt.Errorf("unknown service type: %T", h))
 	}

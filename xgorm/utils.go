@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/jackc/pgx/v5"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/plugin/opentelemetry/tracing"
@@ -34,16 +33,24 @@ func open(dsn string, options *Options) (*gorm.DB, error) {
 	return db, nil
 }
 
-func recreate(ctx context.Context, dsn string) error {
-	cfg, err := pgx.ParseConfig(dsn)
+func recreate(ctx context.Context, config *DbConfig) error {
+	databaseName := config.Database
+
+	master := &DbConfig{
+		AwsRegion: config.AwsRegion,
+		Username:  config.Username,
+		Password:  config.Password,
+		Host:      config.Host,
+		Port:      config.Port,
+		Database:  "postgres",
+		SSLMode:   config.SSLMode,
+	}
+	dsn, err := master.DSN(ctx)
 	if err != nil {
 		return err
 	}
 
-	databaseName := cfg.Database
-	cfg.Database = "postgres"
-
-	db, err := open(cfg.ConnString(), &Options{})
+	db, err := open(dsn, &Options{})
 	if err != nil {
 		return err
 	}
@@ -79,16 +86,15 @@ func NewDb(ctx context.Context, config *DbConfig, opt ...Option) (*gorm.DB, erro
 		o(opts)
 	}
 
-	dsn, err := config.DSN(ctx)
-	if err != nil {
-		return nil, err
-	}
-
 	if opts.Recreate {
-		if err := recreate(ctx, dsn); err != nil {
+		if err := recreate(ctx, config); err != nil {
 			return nil, err
 		}
 	}
 
+	dsn, err := config.DSN(ctx)
+	if err != nil {
+		return nil, err
+	}
 	return open(dsn, opts)
 }
