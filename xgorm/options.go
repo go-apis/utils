@@ -7,12 +7,13 @@ import (
 )
 
 type Options struct {
-	Logger                 gormlogger.Interface
-	Models                 []interface{}
-	AutoMigrate            bool
-	Tracing                bool
-	Recreate               bool
-	SkipDefaultTransaction bool
+	Logger                   gormlogger.Interface
+	Models                   []interface{}
+	AutoMigrate              bool
+	Tracing                  bool
+	Recreate                 bool
+	SkipDefaultTransaction   bool
+	DisableNestedTransaction bool
 }
 
 type Option func(*Options)
@@ -54,6 +55,12 @@ func WithRecreate() Option {
 func WithSkipDefaultTransaction() Option {
 	return func(o *Options) {
 		o.SkipDefaultTransaction = true
+	}
+}
+
+func WithDisableNestedTransaction() Option {
+	return func(o *Options) {
+		o.DisableNestedTransaction = true
 	}
 }
 

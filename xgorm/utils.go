@@ -10,8 +10,11 @@ import (
 )
 
 func open(dsn string, options *Options) (*gorm.DB, error) {
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
-		SkipDefaultTransaction: options.SkipDefaultTransaction,
+	dr := postgres.Open(dsn)
+
+	db, err := gorm.Open(dr, &gorm.Config{
+		SkipDefaultTransaction:   options.SkipDefaultTransaction,
+		DisableNestedTransaction: options.DisableNestedTransaction,
 	})
 	if err != nil {
 		return nil, err
