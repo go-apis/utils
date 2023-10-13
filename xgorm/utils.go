@@ -96,5 +96,19 @@ func NewDb(ctx context.Context, config *DbConfig, opt ...Option) (*gorm.DB, erro
 	if err != nil {
 		return nil, err
 	}
-	return open(dsn, opts)
+
+	gdb, err := open(dsn, opts)
+	if err != nil {
+		return nil, err
+	}
+
+	sqlDB, err := gdb.DB()
+	if err != nil {
+		return nil, err
+	}
+
+	sqlDB.SetMaxIdleConns(config.MaxIdleConns)
+	sqlDB.SetMaxOpenConns(config.MaxOpenConns)
+
+	return gdb, nil
 }

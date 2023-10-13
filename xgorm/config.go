@@ -16,6 +16,9 @@ type DbConfig struct {
 	Port      int
 	Database  string
 	SSLMode   string
+
+	MaxIdleConns int
+	MaxOpenConns int
 }
 
 func (cfg *DbConfig) DSN(ctx context.Context) (string, error) {
