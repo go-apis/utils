@@ -28,15 +28,11 @@ func NewUsecaseInteractor[T es.Command]() usecase.Interactor {
 		if err != nil {
 			return err
 		}
-		defer unit.Rollback(ctx)
 
 		if err := unit.Dispatch(ctx, in); err != nil {
 			return err
 		}
 
-		if _, err := unit.Commit(ctx); err != nil {
-			return err
-		}
 		out.Id = in.GetAggregateId()
 		return nil
 	})
