@@ -3,6 +3,7 @@ package xgorm
 import (
 	"context"
 	"fmt"
+	"strings"
 )
 
 type DbConfig struct {
@@ -19,16 +20,24 @@ type DbConfig struct {
 }
 
 func (cfg *DbConfig) DSN(ctx context.Context) (string, error) {
-	dbHost := cfg.Host
-	dbPort := cfg.Port
-	dbName := cfg.Database
-	dbUser := cfg.Username
-	dbPass := cfg.Password
-	dbSslMode := cfg.SSLMode
-
-	dsn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s", dbHost, dbPort, dbUser, dbPass, dbName)
-	if len(dbSslMode) > 0 {
-		dsn += fmt.Sprintf(" sslmode=%s", dbSslMode)
+	var parts []string
+	if len(cfg.Host) > 0 {
+		parts = append(parts, fmt.Sprintf("host=%s", cfg.Host))
 	}
-	return dsn, nil
+	if cfg.Port > 0 {
+		parts = append(parts, fmt.Sprintf("port=%d", cfg.Port))
+	}
+	if len(cfg.Database) > 0 {
+		parts = append(parts, fmt.Sprintf("dbname=%s", cfg.Database))
+	}
+	if len(cfg.Username) > 0 {
+		parts = append(parts, fmt.Sprintf("user=%s", cfg.Username))
+	}
+	if len(cfg.Password) > 0 {
+		parts = append(parts, fmt.Sprintf("password=%s", cfg.Password))
+	}
+	if len(cfg.SSLMode) > 0 {
+		parts = append(parts, fmt.Sprintf("sslmode=%s", cfg.SSLMode))
+	}
+	return strings.Join(parts, " "), nil
 }

@@ -5,19 +5,23 @@ import (
 	"testing"
 )
 
-func TestRecreate(t *testing.T) {
+func TestConnect(t *testing.T) {
 	ctx := context.Background()
 	cfg := &DbConfig{
 		AwsRegion: "us-east-1",
-		Username:  "noops",
-		Password:  "mysecret",
+		Username:  "identity",
+		Password:  "",
 		Host:      "localhost",
 		Port:      5432,
-		Database:  "config",
+		Database:  "identity-db",
 		SSLMode:   "disable",
 	}
 
-	if err := recreate(ctx, cfg); err != nil {
+	db, err := NewDb(ctx, cfg)
+	if err != nil {
 		t.Fatal(err)
+	}
+	if db.Error != nil {
+		t.Fatal(db.Error)
 	}
 }
