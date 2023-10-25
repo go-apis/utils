@@ -3,37 +3,107 @@ package xgorm
 import (
 	"context"
 	"fmt"
+	"time"
 
+	awsconfig "github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/feature/rds/auth"
+	"github.com/contextcloud/goutils/xlog"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/stdlib"
+	"go.uber.org/zap"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/plugin/opentelemetry/tracing"
 )
 
-func open(dsn string, options *Options) (*gorm.DB, error) {
-	dr := postgres.Open(dsn)
+func awsAuthToken(region string, timeout time.Duration) func(ctx context.Context, config *pgx.ConnConfig) error {
+	t := time.Now()
 
-	db, err := gorm.Open(dr, &gorm.Config{
-		SkipDefaultTransaction:   options.SkipDefaultTransaction,
-		DisableNestedTransaction: options.DisableNestedTransaction,
-	})
+	return func(ctx context.Context, config *pgx.ConnConfig) error {
+		log := xlog.Logger(ctx)
+
+		if config.Password == "" || time.Since(t) < timeout {
+			awscfg, err := awsconfig.LoadDefaultConfig(ctx)
+			if err != nil {
+				log.Error("issue loading aws config", zap.Error(err))
+				return err
+			}
+			dbEndpoint := fmt.Sprintf("%s:%d", config.Host, config.Port)
+
+			authenticationToken, err := auth.BuildAuthToken(ctx, dbEndpoint, region, config.User, awscfg.Credentials)
+			if err != nil {
+				log.Error("issue building auth token", zap.Error(err))
+				return err
+			}
+
+			// set the password
+			config.Password = authenticationToken
+
+			// restart the time
+			t = time.Now()
+		}
+		return nil
+	}
+}
+
+func open(ctx context.Context, config *DbConfig, options *Options) (*gorm.DB, error) {
+	log := xlog.Logger(ctx)
+
+	str, err := config.DSN(ctx)
 	if err != nil {
+		log.Error("issue creating dsn", zap.Error(err))
+		return nil, err
+	}
+
+	dbConfig, err := pgx.ParseConfig(str)
+	if err != nil {
+		log.Error("issue parsing dsn", zap.Error(err))
+		return nil, err
+	}
+
+	var openOptions []stdlib.OptionOpenDB
+	if config.Password == "" && config.AwsRegion != "" {
+		openOptions = append(openOptions, stdlib.OptionBeforeConnect(awsAuthToken(config.AwsRegion, 10*time.Minute)))
+	}
+
+	db, err := gorm.Open(
+		postgres.New(postgres.Config{
+			Conn: stdlib.OpenDB(*dbConfig, openOptions...),
+		}),
+		&gorm.Config{
+			SkipDefaultTransaction:   options.SkipDefaultTransaction,
+			DisableNestedTransaction: options.DisableNestedTransaction,
+		})
+	if err != nil {
+		log.Error("issue opening db", zap.Error(err))
 		return nil, err
 	}
 
 	if options.AutoMigrate && len(options.Models) > 0 {
 		if err := db.AutoMigrate(options.Models...); err != nil {
+			log.Error("issue automigrating", zap.Error(err))
 			return nil, err
 		}
 	}
 
 	if options.Tracing {
 		if err := db.Use(tracing.NewPlugin()); err != nil {
+			log.Error("issue adding tracing plugin", zap.Error(err))
 			return nil, err
 		}
 	}
 	if options.Logger != nil {
 		db.Logger = options.Logger
 	}
+
+	inner, err := db.DB()
+	if err != nil {
+		log.Error("issue getting db", zap.Error(err))
+		return nil, err
+	}
+
+	inner.SetMaxIdleConns(config.MaxIdleConns)
+	inner.SetMaxOpenConns(config.MaxOpenConns)
 
 	return db, nil
 }
@@ -50,12 +120,7 @@ func recreate(ctx context.Context, config *DbConfig) error {
 		Database:  "postgres",
 		SSLMode:   config.SSLMode,
 	}
-	dsn, err := master.DSN(ctx)
-	if err != nil {
-		return err
-	}
-
-	db, err := open(dsn, &Options{})
+	db, err := open(ctx, master, &Options{})
 	if err != nil {
 		return err
 	}
@@ -97,23 +162,10 @@ func NewDb(ctx context.Context, config *DbConfig, opt ...Option) (*gorm.DB, erro
 		}
 	}
 
-	dsn, err := config.DSN(ctx)
+	gdb, err := open(ctx, config, opts)
 	if err != nil {
 		return nil, err
 	}
-
-	gdb, err := open(dsn, opts)
-	if err != nil {
-		return nil, err
-	}
-
-	sqlDB, err := gdb.DB()
-	if err != nil {
-		return nil, err
-	}
-
-	sqlDB.SetMaxIdleConns(config.MaxIdleConns)
-	sqlDB.SetMaxOpenConns(config.MaxOpenConns)
 
 	return gdb, nil
 }
