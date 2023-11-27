@@ -15,7 +15,7 @@ type Return struct {
 	Id uuid.UUID `json:"id" format:"uuid" required:"true"`
 }
 
-func NewUsecaseInteractor[T es.Command]() usecase.Interactor {
+func NewCommandInteractor[T es.Command]() usecase.Interactor {
 	var cmd T
 	u := usecase.NewIOI(cmd, new(Return), func(ctx context.Context, input interface{}, output interface{}) error {
 		var (
