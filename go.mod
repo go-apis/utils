@@ -12,6 +12,7 @@ require (
 	github.com/iamolegga/enviper v1.4.2
 	github.com/jackc/pgx/v5 v5.5.0
 	github.com/mitchellh/go-ps v1.0.0
+	github.com/mitchellh/mapstructure v1.5.0
 	github.com/shakinm/xlsReader v0.9.12
 	github.com/spf13/viper v1.17.0
 	github.com/stretchr/testify v1.8.4
@@ -75,7 +76,6 @@ require (
 	github.com/magiconair/properties v1.8.7 // indirect
 	github.com/matttproud/golang_protobuf_extensions/v2 v2.0.0 // indirect
 	github.com/metakeule/fmtdate v1.1.2 // indirect
-	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826 // indirect
 	github.com/pelletier/go-toml/v2 v2.1.0 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect

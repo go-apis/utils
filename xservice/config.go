@@ -3,8 +3,11 @@ package xservice
 import (
 	"context"
 	"fmt"
+	"os"
+	"reflect"
 
 	"github.com/iamolegga/enviper"
+	"github.com/mitchellh/mapstructure"
 	"github.com/spf13/viper"
 )
 
@@ -34,6 +37,19 @@ type ServiceConfig struct {
 	Metrics MetricsConfig
 }
 
+func StringExpandEnv() mapstructure.DecodeHookFuncKind {
+	return func(
+		f reflect.Kind,
+		t reflect.Kind,
+		data interface{}) (interface{}, error) {
+		if f != reflect.String || t != reflect.String {
+			return data, nil
+		}
+
+		return os.ExpandEnv(data.(string)), nil
+	}
+}
+
 func newConfig() *ServiceConfig {
 	return &ServiceConfig{
 		Service:    "service",
@@ -44,7 +60,7 @@ func newConfig() *ServiceConfig {
 }
 
 func (c *ServiceConfig) Parse(cfg interface{}) error {
-	if err := e.Unmarshal(cfg); err != nil {
+	if err := e.Unmarshal(cfg, viper.DecodeHook(StringExpandEnv())); err != nil {
 		return fmt.Errorf("unmarshal config: %w", err)
 	}
 	return nil
@@ -52,7 +68,7 @@ func (c *ServiceConfig) Parse(cfg interface{}) error {
 
 func NewConfig(ctx context.Context) (*ServiceConfig, error) {
 	cfg := newConfig()
-	if err := e.Unmarshal(cfg); err != nil {
+	if err := e.Unmarshal(cfg, viper.DecodeHook(StringExpandEnv())); err != nil {
 		return nil, fmt.Errorf("unmarshal config: %w", err)
 	}
 
