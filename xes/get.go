@@ -16,7 +16,7 @@ import (
 )
 
 type GetInput struct {
-	Namespace string    `header:"X-Namespace" format:"uuid" required:"true"`
+	Namespace string    `header:"X-Namespace" required:"true"`
 	Id        uuid.UUID `path:"id" format:"uuid" required:"true"`
 }
 
