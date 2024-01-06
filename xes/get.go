@@ -27,9 +27,10 @@ func NewGetEntityInteractor[T es.Entity]() usecase.Interactor {
 		t = t.Elem()
 	}
 	name := t.Name()
+	item := reflect.New(t).Interface()
 
 	var in GetInput
-	u := usecase.NewIOI(in, entity, func(ctx context.Context, input interface{}, output interface{}) error {
+	u := usecase.NewIOI(in, item, func(ctx context.Context, input interface{}, output interface{}) error {
 		log := xlog.Logger(ctx)
 
 		in := input.(GetInput)
