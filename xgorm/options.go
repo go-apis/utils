@@ -1,6 +1,7 @@
 package xgorm
 
 import (
+	"github.com/jackc/pgx/v5/stdlib"
 	"go.uber.org/zap"
 	gormlogger "gorm.io/gorm/logger"
 	"moul.io/zapgorm2"
@@ -14,6 +15,7 @@ type Options struct {
 	Recreate                 bool
 	SkipDefaultTransaction   bool
 	DisableNestedTransaction bool
+	OpenOptions              []stdlib.OptionOpenDB
 }
 
 type Option func(*Options)
@@ -21,6 +23,12 @@ type Option func(*Options)
 func WithModels(models ...interface{}) Option {
 	return func(o *Options) {
 		o.Models = append(o.Models, models...)
+	}
+}
+
+func WithOptionOpenDB(option stdlib.OptionOpenDB) Option {
+	return func(o *Options) {
+		o.OpenOptions = append(o.OpenOptions, option)
 	}
 }
 

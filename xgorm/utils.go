@@ -61,7 +61,7 @@ func open(ctx context.Context, config *DbConfig, options *Options) (*gorm.DB, er
 		return nil, err
 	}
 
-	var openOptions []stdlib.OptionOpenDB
+	openOptions := options.OpenOptions
 	if config.Password == "" && config.AwsRegion != "" {
 		openOptions = append(openOptions, stdlib.OptionBeforeConnect(awsAuthToken(config.AwsRegion, 10*time.Minute)))
 	}
