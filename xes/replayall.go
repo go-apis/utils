@@ -19,7 +19,6 @@ func NewReplayAllInteractor(name string) usecase.Interactor {
 	}
 
 	u := usecase.NewInteractor(func(ctx context.Context, input ReplayAllInput, output *ReplayAllOutput) error {
-
 		unit, err := es.GetUnit(ctx)
 		if err != nil {
 			return err
@@ -44,24 +43,16 @@ func NewReplayAllInteractor(name string) usecase.Interactor {
 			return err
 		}
 
-		replayCmds := make([]*es.ReplayCommand, len(events))
+		cmds := make([]es.Command, len(events))
 		for i, evt := range events {
-			replayCmds[i] = &es.ReplayCommand{
-				BaseCommand: es.BaseCommand{
-					AggregateId: evt.AggregateId,
-				},
-				BaseNamespaceCommand: es.BaseNamespaceCommand{
-					Namespace: evt.Namespace,
-				},
-				AggregateName: evt.AggregateType,
-			}
+			cmds[i] = es.NewReplayCommand(evt.Namespace, evt.AggregateId, evt.AggregateType)
 		}
 
-		if err := unit.Replay(ctx, replayCmds...); err != nil {
+		if err := unit.Dispatch(ctx, cmds...); err != nil {
 			return err
 		}
 
-		output.TotalCommands = len(replayCmds)
+		output.TotalCommands = len(cmds)
 		return nil
 	})
 

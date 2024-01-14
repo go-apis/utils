@@ -22,17 +22,8 @@ func NewReplayInteractor(name string) usecase.Interactor {
 			return err
 		}
 
-		replay := es.ReplayCommand{
-			BaseCommand: es.BaseCommand{
-				AggregateId: input.AggregateId,
-			},
-			BaseNamespaceCommand: es.BaseNamespaceCommand{
-				Namespace: input.Namespace,
-			},
-			AggregateName: name,
-		}
-
-		if err := unit.Replay(ctx, &replay); err != nil {
+		replay := es.NewReplayCommand(input.Namespace, input.AggregateId, name)
+		if err := unit.Dispatch(ctx, replay); err != nil {
 			return err
 		}
 
