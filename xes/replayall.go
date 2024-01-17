@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/contextcloud/eventstore/es"
-	"github.com/contextcloud/eventstore/es/filters"
 	"github.com/swaggest/usecase"
 	"github.com/swaggest/usecase/status"
 )
@@ -25,8 +24,8 @@ func NewReplayAllInteractor(name string) usecase.Interactor {
 		}
 
 		nctx := es.SetNamespace(ctx, input.Namespace)
-		events, err := unit.FindEvents(nctx, filters.Filter{
-			Where: []filters.WhereClause{
+		events, err := unit.FindEvents(nctx, es.Filter{
+			Where: []es.WhereClause{
 				{
 					Column: "aggregate_type",
 					Op:     "eq",

@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"reflect"
 
 	"github.com/contextcloud/eventstore/es"
 	"github.com/contextcloud/goutils/xlog"
@@ -22,12 +21,15 @@ type GetInput struct {
 
 func NewGetEntityInteractor[T es.Entity]() usecase.Interactor {
 	var entity T
-	t := reflect.TypeOf(entity)
-	for t.Kind() == reflect.Ptr {
-		t = t.Elem()
+	opts := es.NewEntityOptions(entity)
+	entityConfig, err := es.NewEntityConfig(opts)
+	if err != nil {
+		panic(err)
 	}
-	name := t.Name()
-	item := reflect.New(t).Interface()
+	item, err := entityConfig.Factory()
+	if err != nil {
+		panic(err)
+	}
 
 	var in GetInput
 	u := usecase.NewIOI(in, item, func(ctx context.Context, input interface{}, output interface{}) error {
@@ -48,20 +50,20 @@ func NewGetEntityInteractor[T es.Entity]() usecase.Interactor {
 			return err
 		}
 
-		errGet := unit.Get(ctx, name, namespace, in.Id, output)
+		errGet := unit.Get(ctx, entityConfig.Name, namespace, in.Id, output)
 		if errGet != nil && errors.Is(errGet, sql.ErrNoRows) {
 			return status.NotFound
 		}
 		if errGet != nil {
-			log.Error("failed to find config", zap.Error(errGet))
+			log.Error("failed to find", zap.String("name", entityConfig.Name), zap.Error(errGet))
 			return fmt.Errorf("failed to find config: %w %w", errGet, status.Unknown)
 		}
 
 		return nil
 	})
 
-	u.SetTitle(fmt.Sprintf("Get Entity %s", name))
-	u.SetName(fmt.Sprintf("Get Entity.%s", name))
+	u.SetTitle(fmt.Sprintf("Get %s", entityConfig.Name))
+	u.SetName(fmt.Sprintf("Get %s", entityConfig.Name))
 	u.SetExpectedErrors(status.InvalidArgument)
 	u.SetExpectedErrors(status.Unknown)
 	u.SetExpectedErrors(status.NotFound)
