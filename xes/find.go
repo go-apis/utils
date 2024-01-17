@@ -11,15 +11,43 @@ import (
 	"go.uber.org/zap"
 )
 
-type FindInput[W any] struct {
-	Where     W          `query:"where" required:"true"`
-	Limit     *int       `query:"limit"`
-	Offset    *int       `query:"offset"`
-	Order     []es.Order `query:"order"`
-	Namespace string     `header:"X-Namespace" required:"true"`
+type FindInput interface {
+	GetNamespace() string
+	GetLimit() *int
+	GetOffset() *int
+	GetOrder() []es.Order
 }
 
-func NewFindEntityInteractor[T es.Entity, W any]() usecase.Interactor {
+type BaseFindInput struct {
+	Limit     *int     `query:"limit"`
+	Offset    *int     `query:"offset"`
+	Order     []string `query:"order"`
+	Namespace string   `header:"X-Namespace" required:"true"`
+}
+
+func (i *BaseFindInput) GetNamespace() string {
+	return i.Namespace
+}
+
+func (i *BaseFindInput) GetLimit() *int {
+	return i.Limit
+}
+
+func (i *BaseFindInput) GetOffset() *int {
+	return i.Offset
+}
+
+func (i *BaseFindInput) GetOrder() []es.Order {
+	orders := []es.Order{}
+	for _, order := range i.Order {
+		orders = append(orders, es.Order{
+			Column: order,
+		})
+	}
+	return orders
+}
+
+func NewFindEntityInteractor[T es.Entity, W FindInput]() usecase.Interactor {
 	var entity T
 	opts := es.NewEntityOptions(entity)
 	entityConfig, err := es.NewEntityConfig(opts)
@@ -34,27 +62,27 @@ func NewFindEntityInteractor[T es.Entity, W any]() usecase.Interactor {
 
 	items := []T{}
 
-	var in FindInput[W]
+	var in W
 	u := usecase.NewIOI(in, items, func(ctx context.Context, input interface{}, output interface{}) error {
-		log := xlog.Logger(ctx)
-
-		in := input.(FindInput[W])
-
-		namespace := es.GetNamespace(ctx)
-		if len(in.Namespace) > 0 {
-			namespace = in.Namespace
-		}
+		in := input.(W)
 
 		unit, err := es.GetUnit(ctx)
 		if err != nil {
 			return err
 		}
 
+		log := xlog.Logger(ctx)
+
 		filter := es.Filter{
-			Where:  whereFactory(in.Where),
-			Order:  in.Order,
-			Limit:  in.Limit,
-			Offset: in.Offset,
+			Where:  whereFactory(in),
+			Order:  in.GetOrder(),
+			Limit:  in.GetLimit(),
+			Offset: in.GetOffset(),
+		}
+
+		namespace := in.GetNamespace()
+		if len(namespace) == 0 {
+			namespace = es.GetNamespace(ctx)
 		}
 		if err := unit.Find(ctx, entityConfig.Name, namespace, filter, output); err != nil {
 			log.Error("failed to find", zap.String("name", entityConfig.Name), zap.Error(err))

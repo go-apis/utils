@@ -6,7 +6,7 @@ require (
 	github.com/aws/aws-lambda-go v1.43.0
 	github.com/aws/aws-sdk-go-v2/config v1.26.4
 	github.com/aws/aws-sdk-go-v2/feature/rds/auth v1.3.10
-	github.com/contextcloud/eventstore v0.3.11
+	github.com/contextcloud/eventstore v0.3.12
 	github.com/google/uuid v1.5.0
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/heptiolabs/healthcheck v0.0.0-20211123025425-613501dd5deb

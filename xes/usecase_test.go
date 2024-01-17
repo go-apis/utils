@@ -13,6 +13,7 @@ type TestEntity struct {
 }
 
 type TestWhere struct {
+	BaseFindInput
 }
 
 func Test_Usecases(t *testing.T) {
@@ -21,7 +22,7 @@ func Test_Usecases(t *testing.T) {
 		t.Fail()
 	}
 
-	uc2 := NewFindEntityInteractor[*TestEntity, TestWhere]()
+	uc2 := NewFindEntityInteractor[*TestEntity, *TestWhere]()
 	if uc2 == nil {
 		t.Fail()
 	}
