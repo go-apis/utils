@@ -12,6 +12,14 @@ import (
 	"go.uber.org/zap"
 )
 
+type Pagination[T any] struct {
+	PageSize   int   `json:"page_size" required:"true"`
+	Page       int   `json:"page" required:"true"`
+	TotalItems int64 `json:"total_items" required:"true"`
+	TotalPages int   `json:"total_pages" required:"true"`
+	Items      []T   `json:"items" required:"true"`
+}
+
 type PagingInput interface {
 	GetNamespace() string
 	GetPage() int
@@ -61,11 +69,11 @@ func NewPagingEntityInteractor[T es.Entity, W PagingInput]() usecase.Interactor 
 		panic(err)
 	}
 
-	items := &es.Pagination[T]{}
+	items := &Pagination[T]{}
 	var in W
 	u := usecase.NewIOI(in, items, func(ctx context.Context, input interface{}, output interface{}) error {
 		in := input.(W)
-		out := output.(*es.Pagination[T])
+		out := output.(*Pagination[T])
 
 		page := in.GetPage()
 		pageSize := in.GetPageSize()
@@ -103,7 +111,7 @@ func NewPagingEntityInteractor[T es.Entity, W PagingInput]() usecase.Interactor 
 			return fmt.Errorf("failed to find: %w %w", err, status.Unknown)
 		}
 
-		out.Limit = pageSize
+		out.PageSize = pageSize
 		out.Page = page
 		out.TotalItems = int64(totalItems)
 		out.TotalPages = totalPages
