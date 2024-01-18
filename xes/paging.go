@@ -14,28 +14,28 @@ import (
 
 type PagingInput interface {
 	GetNamespace() string
-	GetLimit() *int
-	GetOffset() *int
+	GetPage() int
+	GetPageSize() int
 	GetOrder() []es.Order
 }
 
 type BasePagingInput struct {
-	Limit     *int     `query:"limit"`
-	Offset    *int     `query:"offset"`
-	Order     []string `query:"order"`
 	Namespace string   `header:"X-Namespace" required:"true"`
+	Page      int      `query:"page" required:"true"`
+	PageSize  int      `query:"page_size" required:"true"`
+	Order     []string `query:"order"`
 }
 
 func (i *BasePagingInput) GetNamespace() string {
 	return i.Namespace
 }
 
-func (i *BasePagingInput) GetLimit() *int {
-	return i.Limit
+func (i *BasePagingInput) GetPage() int {
+	return i.Page
 }
 
-func (i *BasePagingInput) GetOffset() *int {
-	return i.Offset
+func (i *BasePagingInput) GetPageSize() int {
+	return i.PageSize
 }
 
 func (i *BasePagingInput) GetOrder() []es.Order {
@@ -67,17 +67,15 @@ func NewPagingEntityInteractor[T es.Entity, W PagingInput]() usecase.Interactor 
 		in := input.(W)
 		out := output.(*es.Pagination[T])
 
+		page := in.GetPage()
+		pageSize := in.GetPageSize()
+
+		offset := (page - 1) * pageSize
 		filter := es.Filter{
 			Where:  whereFactory(in),
 			Order:  in.GetOrder(),
-			Limit:  in.GetLimit(),
-			Offset: in.GetOffset(),
-		}
-		if filter.Limit == nil {
-			return fmt.Errorf("Limit required for pagination")
-		}
-		if filter.Offset == nil {
-			return fmt.Errorf("Offset required for pagination")
+			Limit:  &pageSize,
+			Offset: &offset,
 		}
 
 		namespace := in.GetNamespace()
@@ -97,6 +95,7 @@ func NewPagingEntityInteractor[T es.Entity, W PagingInput]() usecase.Interactor 
 			log.Error("failed to count", zap.String("name", entityConfig.Name), zap.Error(err))
 			return fmt.Errorf("failed to count: %w %w", err, status.Unknown)
 		}
+		totalPages := int(math.Ceil(float64(totalItems) / float64(pageSize)))
 
 		var items []T
 		if err := unit.Find(ctx, entityConfig.Name, namespace, filter, &items); err != nil {
@@ -104,10 +103,7 @@ func NewPagingEntityInteractor[T es.Entity, W PagingInput]() usecase.Interactor 
 			return fmt.Errorf("failed to find: %w %w", err, status.Unknown)
 		}
 
-		totalPages := int(math.Ceil(float64(totalItems) / float64(*filter.Limit)))
-		page := int(math.Floor(float64(*filter.Offset)/float64(*filter.Limit))) + 1
-
-		out.Limit = *filter.Limit
+		out.Limit = pageSize
 		out.Page = page
 		out.TotalItems = int64(totalItems)
 		out.TotalPages = totalPages
