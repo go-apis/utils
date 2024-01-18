@@ -21,8 +21,8 @@ type PagingInput interface {
 
 type BasePagingInput struct {
 	Namespace string   `header:"X-Namespace" required:"true"`
-	Page      int      `query:"page" required:"true"`
-	PageSize  int      `query:"page_size" required:"true"`
+	Page      int      `query:"page" default:"1"`
+	PageSize  int      `query:"page_size" default:"10"`
 	Order     []string `query:"order"`
 }
 
