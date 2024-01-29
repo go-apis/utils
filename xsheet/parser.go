@@ -5,9 +5,12 @@ import (
 	"encoding/csv"
 	"fmt"
 	"io"
+	"unicode"
 
 	"github.com/shakinm/xlsReader/xls"
 	"github.com/xuri/excelize/v2"
+	"golang.org/x/text/runes"
+	"golang.org/x/text/transform"
 )
 
 var ErrInvalidFormat = fmt.Errorf("Invalid file format")
@@ -150,13 +153,21 @@ func (p *parser[T]) parseExcel(ctx context.Context, reader io.Reader) ([]*T, err
 }
 
 func (p *parser[T]) Parse(ctx context.Context, fileName string, fileType string, reader io.Reader) ([]*T, error) {
+	grr := func(r rune) bool {
+		if r == '\n' {
+			return false
+		}
+		return !unicode.IsPrint(r)
+	}
+	r := transform.NewReader(reader, runes.Remove(runes.Predicate(grr)))
+
 	switch {
 	case IsCsvFilename(fileName):
-		return p.parseCsv(ctx, reader)
+		return p.parseCsv(ctx, r)
 	case IsExcelOldFileType(fileType):
-		return p.parseExcelOld(ctx, reader)
+		return p.parseExcelOld(ctx, r)
 	case IsExcelFileType(fileType):
-		return p.parseExcel(ctx, reader)
+		return p.parseExcel(ctx, r)
 	default:
 		return nil, ErrInvalidFormat
 	}
