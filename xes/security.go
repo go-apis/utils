@@ -17,6 +17,7 @@ import (
 type Security interface {
 	Intercept(ctx context.Context, req *http.Request) error
 	Middleware(required bool) func(handler http.Handler) http.Handler
+	Anonymous() func(handler http.Handler) http.Handler
 }
 
 type security struct {
@@ -72,25 +73,55 @@ func (s *security) Middleware(required bool) func(handler http.Handler) http.Han
 
 			actorId, actorIdOk := claims["actor_id"]
 			actorType, actorTypeOk := claims["actor_type"]
-			if !actorIdOk || !actorTypeOk {
-				log.Error("failed to get actor_id or actor_type")
+			if !actorTypeOk {
+				log.Error("actor_type not found in claims")
 				http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 				return
 			}
-			id, err := uuid.Parse(actorId.(string))
-			if err != nil {
-				log.Error("failed to parse actor_id", zap.Error(err))
+			actorTypeStr, ok := actorType.(string)
+			if !ok {
+				log.Error("failed to cast actor_type to string")
 				http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 				return
 			}
 
 			actor := &es.Actor{
-				Id:   id,
-				Type: actorType.(string),
+				Type: actorTypeStr,
 			}
+
+			if actorIdOk {
+				str, ok := actorId.(string)
+				if !ok {
+					log.Error("failed to cast actor_id to string")
+					http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+					return
+				}
+
+				id, err := uuid.Parse(str)
+				if err != nil {
+					log.Error("failed to parse actor_id", zap.Error(err))
+					http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+					return
+				}
+				actor.Id = id
+			}
+
 			ctx = es.SetActor(ctx, actor)
 
 			// Token is authenticated, pass it through
+			next.ServeHTTP(w, r.WithContext(ctx))
+		})
+	}
+}
+
+func (s *security) Anonymous() func(handler http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			ctx := r.Context()
+			ctx = es.SetActor(ctx, &es.Actor{
+				Id:   uuid.New(),
+				Type: "Anonymous",
+			})
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
