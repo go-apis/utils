@@ -24,7 +24,6 @@ type PagingInput interface {
 	GetNamespace() string
 	GetPage() int
 	GetPageSize() int
-	GetOrder() []es.Order
 }
 
 type BasePagingInput struct {
@@ -46,16 +45,6 @@ func (i *BasePagingInput) GetPageSize() int {
 	return i.PageSize
 }
 
-func (i *BasePagingInput) GetOrder() []es.Order {
-	orders := []es.Order{}
-	for _, order := range i.Order {
-		orders = append(orders, es.Order{
-			Column: order,
-		})
-	}
-	return orders
-}
-
 func NewPagingEntityInteractor[T es.Entity, W PagingInput]() usecase.Interactor {
 	var entity T
 	opts := es.NewEntityOptions(entity)
@@ -65,6 +54,10 @@ func NewPagingEntityInteractor[T es.Entity, W PagingInput]() usecase.Interactor 
 	}
 
 	whereFactory, err := es.NewWhereFactory[W]()
+	if err != nil {
+		panic(err)
+	}
+	orderFactory, err := es.NewOrderFactory[W]()
 	if err != nil {
 		panic(err)
 	}
@@ -81,7 +74,7 @@ func NewPagingEntityInteractor[T es.Entity, W PagingInput]() usecase.Interactor 
 		offset := (page - 1) * pageSize
 		filter := es.Filter{
 			Where:  whereFactory(in),
-			Order:  in.GetOrder(),
+			Order:  orderFactory(in),
 			Limit:  &pageSize,
 			Offset: &offset,
 		}

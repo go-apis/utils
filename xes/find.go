@@ -15,7 +15,6 @@ type FindInput interface {
 	GetNamespace() string
 	GetLimit() *int
 	GetOffset() *int
-	GetOrder() []es.Order
 }
 
 type BaseFindInput struct {
@@ -37,16 +36,6 @@ func (i *BaseFindInput) GetOffset() *int {
 	return i.Offset
 }
 
-func (i *BaseFindInput) GetOrder() []es.Order {
-	orders := []es.Order{}
-	for _, order := range i.Order {
-		orders = append(orders, es.Order{
-			Column: order,
-		})
-	}
-	return orders
-}
-
 func NewFindEntityInteractor[T es.Entity, W FindInput]() usecase.Interactor {
 	var entity T
 	opts := es.NewEntityOptions(entity)
@@ -56,6 +45,10 @@ func NewFindEntityInteractor[T es.Entity, W FindInput]() usecase.Interactor {
 	}
 
 	whereFactory, err := es.NewWhereFactory[W]()
+	if err != nil {
+		panic(err)
+	}
+	orderFactory, err := es.NewOrderFactory[W]()
 	if err != nil {
 		panic(err)
 	}
@@ -75,7 +68,7 @@ func NewFindEntityInteractor[T es.Entity, W FindInput]() usecase.Interactor {
 
 		filter := es.Filter{
 			Where:  whereFactory(in),
-			Order:  in.GetOrder(),
+			Order:  orderFactory(in),
 			Limit:  in.GetLimit(),
 			Offset: in.GetOffset(),
 		}
