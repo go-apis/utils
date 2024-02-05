@@ -7,7 +7,7 @@ require (
 	github.com/aws/aws-lambda-go v1.43.0
 	github.com/aws/aws-sdk-go-v2/config v1.26.6
 	github.com/aws/aws-sdk-go-v2/feature/rds/auth v1.3.10
-	github.com/contextcloud/eventstore v0.3.21
+	github.com/contextcloud/eventstore v0.3.22
 	github.com/go-chi/chi/v5 v5.0.11
 	github.com/go-chi/jwtauth/v5 v5.3.0
 	github.com/google/uuid v1.6.0
