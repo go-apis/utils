@@ -7,14 +7,14 @@ require (
 	github.com/aws/aws-lambda-go v1.43.0
 	github.com/aws/aws-sdk-go-v2/config v1.26.6
 	github.com/aws/aws-sdk-go-v2/feature/rds/auth v1.3.10
-	github.com/contextcloud/eventstore v0.3.18
+	github.com/contextcloud/eventstore v0.3.20
 	github.com/go-chi/chi/v5 v5.0.10
 	github.com/go-chi/jwtauth/v5 v5.3.0
 	github.com/google/uuid v1.6.0
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/heptiolabs/healthcheck v0.0.0-20211123025425-613501dd5deb
 	github.com/iamolegga/enviper v1.4.2
-	github.com/jackc/pgx/v5 v5.5.2
+	github.com/jackc/pgx/v5 v5.5.3
 	github.com/lestrrat-go/jwx/v2 v2.0.19
 	github.com/mitchellh/go-ps v1.0.0
 	github.com/mitchellh/mapstructure v1.5.0
@@ -39,7 +39,7 @@ require (
 	golang.org/x/sync v0.6.0
 	golang.org/x/text v0.14.0
 	google.golang.org/api v0.151.0
-	gorm.io/driver/postgres v1.5.4
+	gorm.io/driver/postgres v1.5.5
 	gorm.io/gorm v1.25.6
 	gorm.io/plugin/opentelemetry v0.1.4
 	moul.io/zapgorm2 v1.3.0
