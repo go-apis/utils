@@ -39,7 +39,7 @@ require (
 	golang.org/x/sync v0.6.0
 	golang.org/x/text v0.14.0
 	google.golang.org/api v0.153.0
-	gorm.io/driver/postgres v1.5.5
+	gorm.io/driver/postgres v1.5.4
 	gorm.io/gorm v1.25.6
 	gorm.io/plugin/opentelemetry v0.1.4
 	moul.io/zapgorm2 v1.3.0
