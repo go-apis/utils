@@ -39,7 +39,15 @@ func (p *parser[T]) getRowValues(s xls.Sheet, row int) ([]string, error) {
 }
 
 func (p *parser[T]) parseCsv(ctx context.Context, reader io.Reader) ([]*T, error) {
-	f := csv.NewReader(reader)
+	grr := func(r rune) bool {
+		if r == '\n' {
+			return false
+		}
+		return !unicode.IsPrint(r)
+	}
+	r := transform.NewReader(reader, runes.Remove(runes.Predicate(grr)))
+
+	f := csv.NewReader(r)
 
 	records, err := f.ReadAll()
 	if err != nil {
@@ -153,21 +161,13 @@ func (p *parser[T]) parseExcel(ctx context.Context, reader io.Reader) ([]*T, err
 }
 
 func (p *parser[T]) Parse(ctx context.Context, fileName string, fileType string, reader io.Reader) ([]*T, error) {
-	grr := func(r rune) bool {
-		if r == '\n' {
-			return false
-		}
-		return !unicode.IsPrint(r)
-	}
-	r := transform.NewReader(reader, runes.Remove(runes.Predicate(grr)))
-
 	switch {
 	case IsCsvFilename(fileName):
-		return p.parseCsv(ctx, r)
+		return p.parseCsv(ctx, reader)
 	case IsExcelOldFileType(fileType):
-		return p.parseExcelOld(ctx, r)
+		return p.parseExcelOld(ctx, reader)
 	case IsExcelFileType(fileType):
-		return p.parseExcel(ctx, r)
+		return p.parseExcel(ctx, reader)
 	default:
 		return nil, ErrInvalidFormat
 	}
