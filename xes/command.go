@@ -3,7 +3,6 @@ package xes
 import (
 	"context"
 	"fmt"
-	"reflect"
 
 	"github.com/contextcloud/eventstore/es"
 	"github.com/google/uuid"
@@ -15,8 +14,37 @@ type Return struct {
 	Id uuid.UUID `json:"id" format:"uuid" required:"true"`
 }
 
-func NewCommandInteractor[T es.Command]() usecase.Interactor {
+func NewCommandInteractorExecptedErrors(errors ...error) CommandInteractorOption {
+	return func(opts *CommandInteractorOptions) {
+		opts.Errors = errors
+	}
+}
+
+func NewCommandInteractorErrorHandler(handler func(err error) error) CommandInteractorOption {
+	return func(opts *CommandInteractorOptions) {
+		opts.ErrorHandler = handler
+	}
+}
+
+type CommandInteractorOption func(opts *CommandInteractorOptions)
+
+type CommandInteractorOptions struct {
+	Errors       []error
+	ErrorHandler func(err error) error
+}
+
+func NewCommandInteractor[T es.Command](options ...CommandInteractorOption) usecase.Interactor {
+	opts := &CommandInteractorOptions{
+		Errors:       []error{status.InvalidArgument},
+		ErrorHandler: func(err error) error { return err },
+	}
+	for _, option := range options {
+		option(opts)
+	}
+
 	var cmd T
+	commandConfig := es.NewCommandConfig(cmd)
+
 	u := usecase.NewIOI(cmd, new(Return), func(ctx context.Context, input interface{}, output interface{}) error {
 		var (
 			in  = input.(T)
@@ -26,24 +54,19 @@ func NewCommandInteractor[T es.Command]() usecase.Interactor {
 		// do it!
 		unit, err := es.GetUnit(ctx)
 		if err != nil {
-			return err
+			return opts.ErrorHandler(err)
 		}
 
 		if err := unit.Dispatch(ctx, in); err != nil {
-			return err
+			return opts.ErrorHandler(err)
 		}
 
 		out.Id = in.GetAggregateId()
 		return nil
 	})
 
-	t := reflect.TypeOf(cmd)
-	for t.Kind() == reflect.Ptr {
-		t = t.Elem()
-	}
-
-	u.SetTitle(fmt.Sprintf("Command %s", t.Name()))
-	u.SetName(fmt.Sprintf("Command.%s", t.Name()))
-	u.SetExpectedErrors(status.InvalidArgument)
+	u.SetTitle(fmt.Sprintf("Command %s", commandConfig.Name))
+	u.SetName(fmt.Sprintf("Command.%s", commandConfig.Name))
+	u.SetExpectedErrors(opts.Errors...)
 	return u
 }
