@@ -2,14 +2,6 @@ package xcustomresource
 
 import "encoding/json"
 
-// StatusType represents a CloudFormation response status
-type StatusType string
-
-const (
-	StatusSuccess StatusType = "SUCCESS"
-	StatusFailed  StatusType = "FAILED"
-)
-
 // RequestType represents a CloudFormation request type
 type RequestType string
 
@@ -31,20 +23,21 @@ type Event struct {
 	ResourceProperties    json.RawMessage `json:"ResourceProperties"`
 	OldResourceProperties json.RawMessage `json:"OldResourceProperties,omitempty"`
 	ServiceToken          string
+	// Terraform lifecycle fields
+	// https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lambda_invocation#crud-lifecycle-scope
+	TerraformLifecycleScope *TerraformLifecycleScope `json:"tf,omitempty"`
 }
 
-type Success struct {
-	PhysicalResourceId string      `json:"PhysicalResourceId"`
-	Data               interface{} `json:"Data,omitempty"`
-}
+// action enum Values are create, update, or delete.
+type Action string
 
-type Response struct {
-	Status             StatusType  `json:"Status"`
-	StackId            string      `json:"StackId"`
-	RequestId          string      `json:"RequestId"`
-	PhysicalResourceId string      `json:"PhysicalResourceId"`
-	LogicalResourceId  string      `json:"LogicalResourceId"`
-	Reason             string      `json:"Reason,omitempty"`
-	NoEcho             bool        `json:"NoEcho,omitempty"`
-	Data               interface{} `json:"Data,omitempty"`
+const (
+	TerraformCreate Action = "create"
+	TerraformUpdate Action = "update"
+	TerraformDelete Action = "delete"
+)
+
+type TerraformLifecycleScope struct {
+	Action    Action           `json:"action"`
+	PrevInput *json.RawMessage `json:"prev_input,omitempty"`
 }

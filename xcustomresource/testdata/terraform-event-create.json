@@ -1,0 +1,11 @@
+{
+  "RequestType": "Create",
+  "ResourceProperties": {
+    "Name": "Value",
+    "List": ["1", "2", "3"]
+  },
+  "tf": {
+    "action": "create",
+    "prev_input": null
+  }
+}

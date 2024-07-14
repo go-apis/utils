@@ -1,0 +1,17 @@
+{
+  "RequestType": "Update",
+  "ResourceProperties": {
+    "Name": "Value",
+    "List": ["1", "2"]
+  },
+  "tf": {
+    "action": "update",
+    "prev_input": {
+      "RequestType": "Create",
+      "ResourceProperties": {
+        "Name": "Value",
+        "List": ["1", "2", "3"]
+      }
+    }
+  }
+}
