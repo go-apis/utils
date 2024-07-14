@@ -1,0 +1,13 @@
+{
+  "RequestType": "Create",
+  "ResponseURL": "http://pre-signed-S3-url-for-response",
+  "StackId": "arn:aws:cloudformation:us-west-2:EXAMPLE/stack-name/guid",
+  "RequestId": "unique id for this create request",
+  "ResourceType": "Custom::TestResource",
+  "LogicalResourceId": "MyTestResource",
+  "ServiceToken": "arn:aws:lambda:us-west-2:123456789012:function:custom-resource-lambda",
+  "ResourceProperties": {
+    "Name": "Value",
+    "List": ["1", "2", "3"]
+  }
+}
