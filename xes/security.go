@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/contextcloud/eventstore/es"
+	"github.com/go-apis/eventsourcing/es"
 	"github.com/go-apis/utils/xlog"
 	"github.com/go-chi/jwtauth/v5"
 	"github.com/google/uuid"

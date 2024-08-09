@@ -6,7 +6,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/contextcloud/eventstore/es"
+	"github.com/go-apis/eventsourcing/es"
 	"github.com/go-apis/utils/xlog"
 	"github.com/google/uuid"
 	"github.com/swaggest/usecase"

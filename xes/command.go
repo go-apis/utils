@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/contextcloud/eventstore/es"
+	"github.com/go-apis/eventsourcing/es"
 	"github.com/google/uuid"
 	"github.com/swaggest/usecase"
 	"github.com/swaggest/usecase/status"

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/contextcloud/eventstore/es"
+	"github.com/go-apis/eventsourcing/es"
 	"github.com/go-apis/utils/xlog"
 	"github.com/swaggest/usecase"
 	"github.com/swaggest/usecase/status"

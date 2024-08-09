@@ -3,7 +3,7 @@ package xes
 import (
 	"testing"
 
-	"github.com/contextcloud/eventstore/es"
+	"github.com/go-apis/eventsourcing/es"
 )
 
 type TestEntity struct {
