@@ -20,7 +20,7 @@ require (
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/shakinm/xlsReader v0.9.12
 	github.com/spf13/viper v1.18.2
-	github.com/stretchr/testify v1.8.4
+	github.com/stretchr/testify v1.9.0
 	github.com/swaggest/jsonschema-go v0.3.64
 	github.com/swaggest/openapi-go v0.2.45
 	github.com/swaggest/rest v0.2.61
