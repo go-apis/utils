@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/contextcloud/goutils/xservice"
+	"github.com/go-apis/utils/xservice"
 
 	multierror "github.com/hashicorp/go-multierror"
 	"go.opentelemetry.io/otel"

@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/contextcloud/goutils/xservice"
+	"github.com/go-apis/utils/xservice"
 )
 
 func NewHandler(ctx context.Context, cfg *xservice.ServiceConfig) (http.Handler, error) {

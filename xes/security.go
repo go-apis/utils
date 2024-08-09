@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/contextcloud/eventstore/es"
-	"github.com/contextcloud/goutils/xlog"
+	"github.com/go-apis/utils/xlog"
 	"github.com/go-chi/jwtauth/v5"
 	"github.com/google/uuid"
 	"github.com/lestrrat-go/jwx/v2/jwt"

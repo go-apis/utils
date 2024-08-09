@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/aws/aws-lambda-go/lambdacontext"
-	"github.com/contextcloud/goutils/xlog"
+	"github.com/go-apis/utils/xlog"
 	"go.uber.org/zap"
 )
 

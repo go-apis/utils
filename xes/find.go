@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/contextcloud/eventstore/es"
-	"github.com/contextcloud/goutils/xlog"
+	"github.com/go-apis/utils/xlog"
 	"github.com/swaggest/usecase"
 	"github.com/swaggest/usecase/status"
 	"go.uber.org/zap"

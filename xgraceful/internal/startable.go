@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/contextcloud/goutils/xservice"
+	"github.com/go-apis/utils/xservice"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 

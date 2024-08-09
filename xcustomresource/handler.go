@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/aws/aws-lambda-go/lambda"
-	"github.com/contextcloud/goutils/xlog"
+	"github.com/go-apis/utils/xlog"
 	"go.uber.org/zap"
 )
 

@@ -3,7 +3,7 @@ package internal
 import (
 	"context"
 
-	"github.com/contextcloud/goutils/xlog"
+	"github.com/go-apis/utils/xlog"
 )
 
 type zl struct{}

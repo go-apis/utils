@@ -6,7 +6,7 @@ import (
 	"io"
 	"strings"
 
-	"github.com/contextcloud/goutils/xstorage"
+	"github.com/go-apis/utils/xstorage"
 )
 
 const CONCURRENT_SIZE_REQUESTS = 32

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/contextcloud/goutils/xstring"
+	"github.com/go-apis/utils/xstring"
 )
 
 type Mapper[T any] interface {

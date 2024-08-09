@@ -3,9 +3,9 @@ package main
 import (
 	"context"
 
-	"github.com/contextcloud/goutils/xgraceful"
-	"github.com/contextcloud/goutils/xgraceful/example/function"
-	"github.com/contextcloud/goutils/xservice"
+	"github.com/go-apis/utils/xgraceful"
+	"github.com/go-apis/utils/xgraceful/example/function"
+	"github.com/go-apis/utils/xservice"
 )
 
 func main() {

@@ -7,7 +7,7 @@ import (
 
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/feature/rds/auth"
-	"github.com/contextcloud/goutils/xlog"
+	"github.com/go-apis/utils/xlog"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/stdlib"
 	"go.uber.org/zap"

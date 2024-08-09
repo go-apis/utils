@@ -3,7 +3,7 @@ package internal
 import (
 	"context"
 
-	"github.com/contextcloud/goutils/xservice"
+	"github.com/go-apis/utils/xservice"
 	multierror "github.com/hashicorp/go-multierror"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"

@@ -7,7 +7,7 @@ import (
 	"fmt"
 
 	"github.com/contextcloud/eventstore/es"
-	"github.com/contextcloud/goutils/xlog"
+	"github.com/go-apis/utils/xlog"
 	"github.com/google/uuid"
 	"github.com/swaggest/usecase"
 	"github.com/swaggest/usecase/status"

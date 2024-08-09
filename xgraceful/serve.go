@@ -8,8 +8,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/contextcloud/goutils/xgraceful/internal"
-	"github.com/contextcloud/goutils/xservice"
+	"github.com/go-apis/utils/xgraceful/internal"
+	"github.com/go-apis/utils/xservice"
 )
 
 func run(ctx context.Context, s internal.Startable) {
