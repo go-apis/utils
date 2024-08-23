@@ -4,6 +4,8 @@ import (
 	"context"
 	"os"
 	"testing"
+
+	"github.com/spf13/viper"
 )
 
 type Demo struct {
@@ -17,8 +19,10 @@ func Test_It(t *testing.T) {
 	os.Setenv("HEALTHADDR", ":9000")
 	os.Setenv("MYCUSTOM", "custom")
 
+	v := viper.New()
+
 	ctx := context.Background()
-	cfg, err := NewConfig(ctx)
+	cfg, err := NewConfig(ctx, v)
 	if err != nil {
 		t.Error(err)
 		return
