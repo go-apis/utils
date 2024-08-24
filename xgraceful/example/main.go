@@ -14,17 +14,17 @@ func main() {
 
 	v := viper.New()
 
-	cfg, err := xservice.NewConfig(ctx, v)
+	service, err := xservice.NewService(ctx, v)
 	if err != nil {
 		panic(err)
 	}
 
-	handler, err := function.NewHandler(ctx, cfg)
+	handler, err := function.NewHandler(ctx, service)
 	if err != nil {
 		panic(err)
 	}
 
-	xgraceful.Serve(ctx, cfg, handler)
+	xgraceful.Serve(ctx, service.ServiceConfig, handler)
 	cancel()
 
 	<-ctx.Done()

@@ -22,7 +22,7 @@ func Test_It(t *testing.T) {
 	v := viper.New()
 
 	ctx := context.Background()
-	cfg, err := NewConfig(ctx, v)
+	cfg, err := NewService(ctx, v)
 	if err != nil {
 		t.Error(err)
 		return
