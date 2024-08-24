@@ -171,7 +171,8 @@ func TestEventWithoutResponseURL(t *testing.T) {
 	assert.NotNil(t, r)
 	// validate success was copied over to response
 	var response Response
-	json.Unmarshal(r, &response)
+	e2 := json.Unmarshal(r, &response)
+	assert.NoError(t, e2)
 	assert.Equal(t, successResponse.PhysicalResourceId, response.PhysicalResourceId)
 	assert.Equal(t, successResponse.Data, response.Data)
 }

@@ -23,7 +23,7 @@ func run(ctx context.Context, s internal.Startable) {
 		<-sig
 
 		// Shutdown signal with grace period of 30 seconds
-		shutdownCtx, _ := context.WithTimeout(serverCtx, 30*time.Second)
+		shutdownCtx, shutdownCancel := context.WithTimeout(serverCtx, 30*time.Second)
 
 		go func() {
 			<-shutdownCtx.Done()
@@ -37,6 +37,7 @@ func run(ctx context.Context, s internal.Startable) {
 			log.Print(err)
 		}
 
+		shutdownCancel()
 		serverStopCtx()
 	}()
 

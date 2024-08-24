@@ -2,6 +2,7 @@ package function
 
 import (
 	"context"
+	"log"
 	"net/http"
 
 	"github.com/go-apis/utils/xservice"
@@ -9,6 +10,9 @@ import (
 
 func NewHandler(ctx context.Context, cfg *xservice.Service) (http.Handler, error) {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Hello World"))
+		_, err := w.Write([]byte("Hello World"))
+		if err != nil {
+			log.Fatal(err)
+		}
 	}), nil
 }
