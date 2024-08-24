@@ -28,7 +28,31 @@ type Event struct {
 	TerraformLifecycleScope *TerraformLifecycleScope `json:"tf,omitempty"`
 }
 
-// action enum Values are create, update, or delete.
+// IsCreate returns true if the request is a create request
+func (e Event) IsCreate() bool {
+	if e.TerraformLifecycleScope != nil {
+		return e.TerraformLifecycleScope.Action == TerraformCreate
+	}
+	return e.RequestType == RequestCreate
+}
+
+// IsUpdate returns true if the request is a delete request
+func (e Event) IsUpdate() bool {
+	if e.TerraformLifecycleScope != nil {
+		return e.TerraformLifecycleScope.Action == TerraformUpdate
+	}
+	return e.RequestType == RequestUpdate
+}
+
+// IsDelete returns true if the request is a delete request
+func (e Event) IsDelete() bool {
+	if e.TerraformLifecycleScope != nil {
+		return e.TerraformLifecycleScope.Action == TerraformDelete
+	}
+	return e.RequestType == RequestDelete
+}
+
+// Action represents a Terraform lifecycle action
 type Action string
 
 const (

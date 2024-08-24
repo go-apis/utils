@@ -55,3 +55,85 @@ func TestTerraformUpdateEventMarshaling(t *testing.T) {
 	assert.Equal(t, TerraformUpdate, inputEvent.TerraformLifecycleScope.Action)
 	assert.NotNil(t, inputEvent.TerraformLifecycleScope.PrevInput)
 }
+
+func TestEventActions(t *testing.T) {
+	tests := []struct {
+		Name           string
+		RequestType    RequestType
+		Action         *Action
+		ExpectedCreate bool
+		ExpectedUpdate bool
+		ExpectedDelete bool
+	}{
+		{
+			Name:           "Create Event",
+			RequestType:    RequestCreate,
+			Action:         nil,
+			ExpectedCreate: true,
+			ExpectedUpdate: false,
+			ExpectedDelete: false,
+		},
+		{
+			Name:           "Update Event",
+			RequestType:    RequestUpdate,
+			Action:         nil,
+			ExpectedCreate: false,
+			ExpectedUpdate: true,
+			ExpectedDelete: false,
+		},
+		{
+			Name:           "Delete Event",
+			RequestType:    RequestDelete,
+			Action:         nil,
+			ExpectedCreate: false,
+			ExpectedUpdate: false,
+			ExpectedDelete: true,
+		},
+		{
+			Name:           "Terraform Create Event",
+			RequestType:    "",
+			Action:         ptr(TerraformCreate),
+			ExpectedCreate: true,
+			ExpectedUpdate: false,
+			ExpectedDelete: false,
+		},
+		{
+			Name:           "Terraform Update Event",
+			RequestType:    RequestCreate,
+			Action:         ptr(TerraformUpdate),
+			ExpectedCreate: false,
+			ExpectedUpdate: true,
+			ExpectedDelete: false,
+		},
+		{
+			Name:           "Terraform Delete Event",
+			RequestType:    RequestCreate,
+			Action:         ptr(TerraformDelete),
+			ExpectedCreate: false,
+			ExpectedUpdate: false,
+			ExpectedDelete: true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.Name, func(t *testing.T) {
+			event := Event{
+				RequestType: test.RequestType,
+			}
+			if test.Action != nil {
+				event.TerraformLifecycleScope = &TerraformLifecycleScope{
+					Action:    *test.Action,
+					PrevInput: nil,
+				}
+			}
+
+			assert.Equal(t, test.ExpectedCreate, event.IsCreate())
+			assert.Equal(t, test.ExpectedUpdate, event.IsUpdate())
+			assert.Equal(t, test.ExpectedDelete, event.IsDelete())
+		})
+	}
+}
+
+func ptr[T any](s T) *T {
+	return &s
+}
