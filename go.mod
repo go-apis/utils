@@ -38,7 +38,7 @@ require (
 	go.uber.org/zap v1.27.0
 	golang.org/x/sync v0.8.0
 	golang.org/x/text v0.17.0
-	google.golang.org/api v0.194.0
+	google.golang.org/api v0.195.0
 	gorm.io/driver/postgres v1.5.9
 	gorm.io/gorm v1.25.11
 	gorm.io/plugin/opentelemetry v0.1.4
