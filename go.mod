@@ -6,7 +6,7 @@ require (
 	cloud.google.com/go/storage v1.43.0
 	github.com/aws/aws-lambda-go v1.47.0
 	github.com/aws/aws-sdk-go-v2/config v1.27.30
-	github.com/aws/aws-sdk-go-v2/feature/rds/auth v1.4.16
+	github.com/aws/aws-sdk-go-v2/feature/rds/auth v1.4.17
 	github.com/go-apis/eventsourcing v0.4.3
 	github.com/go-chi/chi/v5 v5.1.0
 	github.com/go-chi/jwtauth/v5 v5.3.1
@@ -52,7 +52,7 @@ require (
 	cloud.google.com/go/compute/metadata v0.5.0 // indirect
 	cloud.google.com/go/iam v1.2.0 // indirect
 	github.com/ThreeDotsLabs/watermill v1.3.5 // indirect
-	github.com/aws/aws-sdk-go-v2 v1.30.4 // indirect
+	github.com/aws/aws-sdk-go-v2 v1.30.5 // indirect
 	github.com/aws/aws-sdk-go-v2/credentials v1.17.29 // indirect
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.16.12 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/configsources v1.3.16 // indirect
