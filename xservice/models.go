@@ -14,6 +14,8 @@ type ServiceConfig struct {
 	Version    string
 	SrvAddr    string
 	HealthAddr string
+	CertFile   string
+	KeyFile    string
 	Tracing    TracingConfig
 	Metrics    MetricsConfig
 }

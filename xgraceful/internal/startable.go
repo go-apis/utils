@@ -20,7 +20,7 @@ func NewStartable(cfg *xservice.ServiceConfig, h interface{}) Startable {
 		return start
 	case http.Handler:
 		inner := otelhttp.NewHandler(start, cfg.Service)
-		return NewStandard(cfg.SrvAddr, inner)
+		return NewStandard(cfg.SrvAddr, cfg.CertFile, cfg.KeyFile, inner)
 	default:
 		panic(fmt.Errorf("unknown service type: %T", h))
 	}
