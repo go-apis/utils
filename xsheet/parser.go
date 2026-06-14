@@ -125,6 +125,7 @@ func (p *parser[T]) parseExcel(ctx context.Context, reader io.Reader) ([]*T, err
 	if err != nil {
 		return nil, err
 	}
+	defer f.Close()
 	sheets := f.GetSheetList()
 	if len(sheets) == 0 {
 		return nil, ErrNoSheetsFound
