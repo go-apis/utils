@@ -93,13 +93,18 @@ func (store *fileStorage) FinishUpload(ctx context.Context, namespace string, ke
 	sort.Strings(chunks)
 
 	for _, p := range chunks {
-		chunk, err := os.OpenFile(p, os.O_RDONLY, defaultFilePerm)
-		if err != nil {
-			return err
-		}
-		defer chunk.Close()
+		// close each chunk before moving to the next so file descriptors
+		// don't accumulate across a many-chunk upload.
+		if err := func() error {
+			chunk, err := os.OpenFile(p, os.O_RDONLY, defaultFilePerm)
+			if err != nil {
+				return err
+			}
+			defer chunk.Close()
 
-		if _, err := io.Copy(file, chunk); err != nil {
+			_, err = io.Copy(file, chunk)
+			return err
+		}(); err != nil {
 			return err
 		}
 	}

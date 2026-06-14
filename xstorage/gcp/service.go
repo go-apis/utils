@@ -123,7 +123,7 @@ func (service *GCSService) CreateBucket(ctx context.Context, params GCSBucketPar
 
 	// Next check if the bucket exists
 	if _, err := bh.Attrs(ctx); err != nil {
-		if err != storage.ErrBucketNotExist {
+		if !errors.Is(err, storage.ErrBucketNotExist) {
 			return err
 		}
 
@@ -344,6 +344,9 @@ func (service *GCSService) WriteObject(ctx context.Context, params GCSObjectPara
 
 	n, err := io.Copy(w, r)
 	if err != nil {
+		// Close to release the writer's background upload goroutine/session;
+		// the copy error is the one we surface.
+		_ = w.Close()
 		return 0, err
 	}
 
@@ -428,6 +431,9 @@ loop:
 		idx, err := strconv.Atoi(split[1])
 		if err != nil {
 			return nil, err
+		}
+		if idx < 0 {
+			return nil, fmt.Errorf("invalid negative chunk index %d in object name %q", idx, objAttrs.Name)
 		}
 
 		if len(names) <= idx {
