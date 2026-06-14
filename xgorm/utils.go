@@ -22,7 +22,10 @@ func awsAuthToken(region string, timeout time.Duration) func(ctx context.Context
 	return func(ctx context.Context, config *pgx.ConnConfig) error {
 		log := xlog.Logger(ctx)
 
-		if config.Password == "" || time.Since(t) < timeout {
+		// (re)build the IAM auth token when none is set yet or the cached one
+		// has aged past the refresh window. RDS IAM tokens are short-lived, so
+		// using ">=" refreshes on expiry rather than only while still fresh.
+		if config.Password == "" || time.Since(t) >= timeout {
 			awscfg, err := awsconfig.LoadDefaultConfig(ctx)
 			if err != nil {
 				log.Error("issue loading aws config", zap.Error(err))
