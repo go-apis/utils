@@ -87,8 +87,6 @@ func NewFindEntityInteractor[T es.Entity, W FindInput]() usecase.Interactor {
 
 	u.SetTitle(fmt.Sprintf("Find %s", entityConfig.Name))
 	u.SetName(fmt.Sprintf("Find %s", entityConfig.Name))
-	u.SetExpectedErrors(status.InvalidArgument)
-	u.SetExpectedErrors(status.Unknown)
-	u.SetExpectedErrors(status.NotFound)
+	u.SetExpectedErrors(status.InvalidArgument, status.Unknown, status.NotFound)
 	return u
 }

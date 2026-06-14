@@ -76,8 +76,6 @@ func NewOneEntityInteractor[T es.Entity, W OneInput]() usecase.Interactor {
 
 	u.SetTitle(fmt.Sprintf("One %s", entityConfig.Name))
 	u.SetName(fmt.Sprintf("One %s", entityConfig.Name))
-	u.SetExpectedErrors(status.InvalidArgument)
-	u.SetExpectedErrors(status.Unknown)
-	u.SetExpectedErrors(status.NotFound)
+	u.SetExpectedErrors(status.InvalidArgument, status.Unknown, status.NotFound)
 	return u
 }

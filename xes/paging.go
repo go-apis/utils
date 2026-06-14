@@ -114,8 +114,6 @@ func NewPagingEntityInteractor[T es.Entity, W PagingInput]() usecase.Interactor 
 
 	u.SetTitle(fmt.Sprintf("Paging %s", entityConfig.Name))
 	u.SetName(fmt.Sprintf("Paging %s", entityConfig.Name))
-	u.SetExpectedErrors(status.InvalidArgument)
-	u.SetExpectedErrors(status.Unknown)
-	u.SetExpectedErrors(status.NotFound)
+	u.SetExpectedErrors(status.InvalidArgument, status.Unknown, status.NotFound)
 	return u
 }
