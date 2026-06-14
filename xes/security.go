@@ -2,6 +2,7 @@ package xes
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -10,7 +11,7 @@ import (
 	"github.com/go-apis/utils/xlog"
 	"github.com/go-chi/jwtauth/v5"
 	"github.com/google/uuid"
-	"github.com/lestrrat-go/jwx/v2/jwt"
+	"github.com/lestrrat-go/jwx/v3/jwt"
 	"go.uber.org/zap"
 )
 
@@ -52,7 +53,7 @@ func (s *security) Middleware(required bool) func(handler http.Handler) http.Han
 			token, err := jwtauth.VerifyRequest(s.tokenAuth, r, jwtauth.TokenFromHeader)
 
 			// go next if no token found and not required
-			if err == jwtauth.ErrNoTokenFound && !required {
+			if errors.Is(err, jwtauth.ErrNoTokenFound) && !required {
 				next.ServeHTTP(w, r)
 				return
 			}
@@ -64,23 +65,9 @@ func (s *security) Middleware(required bool) func(handler http.Handler) http.Han
 			}
 
 			// parse it.
-			claims, err := token.AsMap(ctx)
-			if err != nil {
-				log.Error("failed to get claims", zap.Error(err))
-				http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
-				return
-			}
-
-			actorId, actorIdOk := claims["actor_id"]
-			actorType, actorTypeOk := claims["actor_type"]
-			if !actorTypeOk {
-				log.Error("actor_type not found in claims")
-				http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
-				return
-			}
-			actorTypeStr, ok := actorType.(string)
-			if !ok {
-				log.Error("failed to cast actor_type to string")
+			var actorTypeStr string
+			if err := token.Get("actor_type", &actorTypeStr); err != nil {
+				log.Error("actor_type not found in claims", zap.Error(err))
 				http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 				return
 			}
@@ -89,15 +76,9 @@ func (s *security) Middleware(required bool) func(handler http.Handler) http.Han
 				Type: actorTypeStr,
 			}
 
-			if actorIdOk {
-				str, ok := actorId.(string)
-				if !ok {
-					log.Error("failed to cast actor_id to string")
-					http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
-					return
-				}
-
-				id, err := uuid.Parse(str)
+			var actorIdStr string
+			if err := token.Get("actor_id", &actorIdStr); err == nil && actorIdStr != "" {
+				id, err := uuid.Parse(actorIdStr)
 				if err != nil {
 					log.Error("failed to parse actor_id", zap.Error(err))
 					http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
