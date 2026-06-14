@@ -3,6 +3,7 @@ package xgorm
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
@@ -16,13 +17,29 @@ import (
 	"gorm.io/plugin/opentelemetry/tracing"
 )
 
+// quoteIdentifier safely quotes a Postgres identifier (e.g. a database name)
+// for use in DDL, where bind parameters are not allowed. It rejects names
+// containing a NUL byte and escapes embedded double quotes by doubling them.
+func quoteIdentifier(name string) (string, error) {
+	if name == "" {
+		return "", fmt.Errorf("empty identifier")
+	}
+	if strings.ContainsRune(name, 0) {
+		return "", fmt.Errorf("identifier contains NUL byte")
+	}
+	return `"` + strings.ReplaceAll(name, `"`, `""`) + `"`, nil
+}
+
 func awsAuthToken(region string, timeout time.Duration) func(ctx context.Context, config *pgx.ConnConfig) error {
 	t := time.Now()
 
 	return func(ctx context.Context, config *pgx.ConnConfig) error {
 		log := xlog.Logger(ctx)
 
-		if config.Password == "" || time.Since(t) < timeout {
+		// (re)build the IAM auth token when none is set yet or the cached one
+		// has aged past the refresh window. RDS IAM tokens are short-lived, so
+		// using ">=" refreshes on expiry rather than only while still fresh.
+		if config.Password == "" || time.Since(t) >= timeout {
 			awscfg, err := awsconfig.LoadDefaultConfig(ctx)
 			if err != nil {
 				log.Error("issue loading aws config", zap.Error(err))
@@ -124,6 +141,16 @@ func recreate(ctx context.Context, config *DbConfig) error {
 	if err != nil {
 		return err
 	}
+	defer func() {
+		if sqlDB, err := db.DB(); err == nil {
+			sqlDB.Close()
+		}
+	}()
+
+	quotedName, err := quoteIdentifier(databaseName)
+	if err != nil {
+		return fmt.Errorf("invalid database name: %w", err)
+	}
 
 	query := `
 		select pg_terminate_backend(pg_stat_activity.pid)
@@ -133,21 +160,17 @@ func recreate(ctx context.Context, config *DbConfig) error {
 		return err
 	}
 
-	q1 := fmt.Sprintf(`drop database if exists %s`, databaseName)
+	q1 := fmt.Sprintf(`drop database if exists %s`, quotedName)
 	if err := db.Exec(q1).Error; err != nil {
 		return err
 	}
 
-	q2 := fmt.Sprintf(`create database %s`, databaseName)
+	q2 := fmt.Sprintf(`create database %s`, quotedName)
 	if err := db.Exec(q2).Error; err != nil {
 		return err
 	}
 
-	sqlDB, err := db.DB()
-	if err != nil {
-		return err
-	}
-	return sqlDB.Close()
+	return nil
 }
 
 func NewDb(ctx context.Context, config *DbConfig, opt ...Option) (*gorm.DB, error) {

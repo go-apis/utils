@@ -64,8 +64,6 @@ func NewGetEntityInteractor[T es.Entity]() usecase.Interactor {
 
 	u.SetTitle(fmt.Sprintf("Get %s", entityConfig.Name))
 	u.SetName(fmt.Sprintf("Get %s", entityConfig.Name))
-	u.SetExpectedErrors(status.InvalidArgument)
-	u.SetExpectedErrors(status.Unknown)
-	u.SetExpectedErrors(status.NotFound)
+	u.SetExpectedErrors(status.InvalidArgument, status.Unknown, status.NotFound)
 	return u
 }

@@ -24,7 +24,11 @@ func StringToUUIDHookFunc() mapstructure.DecodeHookFunc {
 			return data, nil
 		}
 
-		return uuid.Parse(data.(string))
+		s, ok := data.(string)
+		if !ok {
+			return data, nil
+		}
+		return uuid.Parse(s)
 	}
 }
 

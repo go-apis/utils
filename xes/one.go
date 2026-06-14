@@ -3,6 +3,7 @@ package xes
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 
 	"github.com/go-apis/eventsourcing/es"
@@ -65,18 +66,16 @@ func NewOneEntityInteractor[T es.Entity, W OneInput]() usecase.Interactor {
 		switch {
 		case errOne == nil:
 			return nil
-		case errOne == sql.ErrNoRows:
+		case errors.Is(errOne, sql.ErrNoRows):
 			return status.NotFound
 		default:
-			log.Error("failed to find", zap.String("name", entityConfig.Name), zap.Error(err))
-			return fmt.Errorf("failed to find: %w %w", err, status.Unknown)
+			log.Error("failed to find", zap.String("name", entityConfig.Name), zap.Error(errOne))
+			return fmt.Errorf("failed to find: %w %w", errOne, status.Unknown)
 		}
 	})
 
 	u.SetTitle(fmt.Sprintf("One %s", entityConfig.Name))
 	u.SetName(fmt.Sprintf("One %s", entityConfig.Name))
-	u.SetExpectedErrors(status.InvalidArgument)
-	u.SetExpectedErrors(status.Unknown)
-	u.SetExpectedErrors(status.NotFound)
+	u.SetExpectedErrors(status.InvalidArgument, status.Unknown, status.NotFound)
 	return u
 }

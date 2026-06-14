@@ -21,12 +21,26 @@ type fileStorage struct {
 	abs string
 }
 
+// resolve joins the namespace/key under the storage root and verifies the
+// result stays within it, rejecting traversal attempts (e.g. "../") before
+// any filesystem access happens.
+func (store *fileStorage) resolve(ctx context.Context, namespace string, key string) (string, error) {
+	rel := store.GetPath(ctx, namespace, key)
+	p := filepath.Join(store.abs, rel)
+	if p != store.abs && !strings.HasPrefix(p, store.abs+string(os.PathSeparator)) {
+		return "", fmt.Errorf("invalid path: %q escapes storage root", rel)
+	}
+	return p, nil
+}
+
 func (store *fileStorage) WriteChunk(ctx context.Context, namespace string, key string, offset int64, src io.Reader) (int64, error) {
 	l := fmt.Sprintf("%s_%d", key, offset)
-	p := store.GetPath(ctx, namespace, l)
-	p = path.Join(store.abs, p)
+	p, err := store.resolve(ctx, namespace, l)
+	if err != nil {
+		return 0, err
+	}
 
-	if err := os.MkdirAll(path.Dir(p), os.ModePerm); err != nil {
+	if err := os.MkdirAll(filepath.Dir(p), os.ModePerm); err != nil {
 		return 0, err
 	}
 
@@ -40,14 +54,19 @@ func (store *fileStorage) WriteChunk(ctx context.Context, namespace string, key 
 	return n, err
 }
 func (store *fileStorage) GetReader(ctx context.Context, namespace string, key string) (io.ReadCloser, error) {
-	p := store.GetPath(ctx, namespace, key)
-	p = path.Join(store.abs, p)
+	p, err := store.resolve(ctx, namespace, key)
+	if err != nil {
+		return nil, err
+	}
 	return os.Open(p)
 }
 func (store *fileStorage) GetMetadata(ctx context.Context, namespace string, key string) (map[string]string, error) {
 	meta := map[string]string{}
-	p := store.GetPath(ctx, namespace, key) + ".meta"
-	p = path.Join(store.abs, p)
+	base, err := store.resolve(ctx, namespace, key)
+	if err != nil {
+		return meta, err
+	}
+	p := base + ".meta"
 
 	f, err := os.OpenFile(p, os.O_RDONLY, defaultFilePerm)
 	if os.IsNotExist(err) {
@@ -64,8 +83,10 @@ func (store *fileStorage) GetMetadata(ctx context.Context, namespace string, key
 	return meta, nil
 }
 func (store *fileStorage) FinishUpload(ctx context.Context, namespace string, key string, metadata map[string]string) error {
-	p := store.GetPath(ctx, namespace, key)
-	p = path.Join(store.abs, p)
+	p, err := store.resolve(ctx, namespace, key)
+	if err != nil {
+		return err
+	}
 	prefix := fmt.Sprintf("%s_", p)
 	var chunks []string
 
@@ -93,13 +114,18 @@ func (store *fileStorage) FinishUpload(ctx context.Context, namespace string, ke
 	sort.Strings(chunks)
 
 	for _, p := range chunks {
-		chunk, err := os.OpenFile(p, os.O_RDONLY, defaultFilePerm)
-		if err != nil {
-			return err
-		}
-		defer chunk.Close()
+		// close each chunk before moving to the next so file descriptors
+		// don't accumulate across a many-chunk upload.
+		if err := func() error {
+			chunk, err := os.OpenFile(p, os.O_RDONLY, defaultFilePerm)
+			if err != nil {
+				return err
+			}
+			defer chunk.Close()
 
-		if _, err := io.Copy(file, chunk); err != nil {
+			_, err = io.Copy(file, chunk)
+			return err
+		}(); err != nil {
 			return err
 		}
 	}
@@ -112,8 +138,7 @@ func (store *fileStorage) FinishUpload(ctx context.Context, namespace string, ke
 
 	// save metadata!
 	if metadata != nil {
-		metafilename := store.GetPath(ctx, namespace, key) + ".meta"
-		metafilename = path.Join(store.abs, metafilename)
+		metafilename := p + ".meta"
 
 		// try truncate!
 		if err := os.Truncate(metafilename, 0); err != nil && !os.IsNotExist(err) {

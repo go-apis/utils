@@ -2,6 +2,8 @@ package internal
 
 import (
 	"context"
+	"sync"
+	"time"
 
 	multierror "github.com/hashicorp/go-multierror"
 	"golang.org/x/sync/errgroup"
@@ -9,6 +11,9 @@ import (
 
 type multi struct {
 	services []Startable
+
+	shutdownOnce sync.Once
+	shutdownErr  error
 }
 
 func (m *multi) Start(ctx context.Context) error {
@@ -21,17 +26,35 @@ func (m *multi) Start(ctx context.Context) error {
 		})
 	}
 
+	// When the group context is cancelled — because a service's Start failed
+	// or the parent context was cancelled — proactively shut everything down.
+	// http.Server.ListenAndServe ignores context, so without this the other
+	// services would run forever and errs.Wait would block, swallowing the
+	// original failure.
+	errs.Go(func() error {
+		<-ctx.Done()
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+		_ = m.Shutdown(shutdownCtx)
+		return nil
+	})
+
 	return errs.Wait()
 }
 
 func (m *multi) Shutdown(ctx context.Context) error {
-	var all error
-	for _, s := range m.services {
-		if err := s.Shutdown(ctx); err != nil {
-			all = multierror.Append(all, err)
+	// Idempotent: the cancel watcher in Start and the external signal handler
+	// may both call this; only the first invocation tears things down.
+	m.shutdownOnce.Do(func() {
+		// Shut down in reverse registration order so request-serving services
+		// stop before the telemetry/logging they depend on is torn down.
+		for i := len(m.services) - 1; i >= 0; i-- {
+			if err := m.services[i].Shutdown(ctx); err != nil {
+				m.shutdownErr = multierror.Append(m.shutdownErr, err)
+			}
 		}
-	}
-	return all
+	})
+	return m.shutdownErr
 }
 
 func NewMulti(services ...Startable) Startable {

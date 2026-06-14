@@ -66,6 +66,9 @@ func (store *fileStorage) FinishUpload(ctx context.Context, namespace string, ke
 	if err != nil {
 		return err
 	}
+	if len(names) == 0 {
+		return fmt.Errorf("no uploaded chunks found for %q", p)
+	}
 
 	composeParams := GCSComposeParams{
 		Bucket:      store.bucket,

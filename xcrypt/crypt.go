@@ -39,7 +39,11 @@ func (c *crypt) Decrypt(encrypted []byte) ([]byte, error) {
 		return nil, err
 	}
 
-	// Detach nonce from incoming cipher
+	// Detach nonce from incoming cipher. Guard against short/truncated input
+	// so an untrusted ciphertext yields an error instead of a panic.
+	if len(encrypted) < gcm.NonceSize() {
+		return nil, fmt.Errorf("ciphertext too short: got %d bytes, need at least %d", len(encrypted), gcm.NonceSize())
+	}
 	nonce := encrypted[:gcm.NonceSize()]
 	data := encrypted[gcm.NonceSize():]
 
