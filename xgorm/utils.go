@@ -3,6 +3,7 @@ package xgorm
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
@@ -15,6 +16,19 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/plugin/opentelemetry/tracing"
 )
+
+// quoteIdentifier safely quotes a Postgres identifier (e.g. a database name)
+// for use in DDL, where bind parameters are not allowed. It rejects names
+// containing a NUL byte and escapes embedded double quotes by doubling them.
+func quoteIdentifier(name string) (string, error) {
+	if name == "" {
+		return "", fmt.Errorf("empty identifier")
+	}
+	if strings.ContainsRune(name, 0) {
+		return "", fmt.Errorf("identifier contains NUL byte")
+	}
+	return `"` + strings.ReplaceAll(name, `"`, `""`) + `"`, nil
+}
 
 func awsAuthToken(region string, timeout time.Duration) func(ctx context.Context, config *pgx.ConnConfig) error {
 	t := time.Now()
@@ -133,6 +147,11 @@ func recreate(ctx context.Context, config *DbConfig) error {
 		}
 	}()
 
+	quotedName, err := quoteIdentifier(databaseName)
+	if err != nil {
+		return fmt.Errorf("invalid database name: %w", err)
+	}
+
 	query := `
 		select pg_terminate_backend(pg_stat_activity.pid)
 		from pg_stat_activity
@@ -141,12 +160,12 @@ func recreate(ctx context.Context, config *DbConfig) error {
 		return err
 	}
 
-	q1 := fmt.Sprintf(`drop database if exists %s`, databaseName)
+	q1 := fmt.Sprintf(`drop database if exists %s`, quotedName)
 	if err := db.Exec(q1).Error; err != nil {
 		return err
 	}
 
-	q2 := fmt.Sprintf(`create database %s`, databaseName)
+	q2 := fmt.Sprintf(`create database %s`, quotedName)
 	if err := db.Exec(q2).Error; err != nil {
 		return err
 	}
