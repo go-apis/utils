@@ -76,15 +76,25 @@ func (s *security) Middleware(required bool) func(handler http.Handler) http.Han
 				Type: actorTypeStr,
 			}
 
-			var actorIdStr string
-			if err := token.Get("actor_id", &actorIdStr); err == nil && actorIdStr != "" {
-				id, err := uuid.Parse(actorIdStr)
-				if err != nil {
-					log.Error("failed to parse actor_id", zap.Error(err))
+			// actor_id is optional, but if the claim is present it must be a valid
+			// string UUID — a present-but-malformed claim is rejected, mirroring
+			// the pre-jwx-v3 behavior (don't silently accept a bad actor_id).
+			if token.Has("actor_id") {
+				var actorIdStr string
+				if err := token.Get("actor_id", &actorIdStr); err != nil {
+					log.Error("failed to read actor_id claim", zap.Error(err))
 					http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 					return
 				}
-				actor.Id = id
+				if actorIdStr != "" {
+					id, err := uuid.Parse(actorIdStr)
+					if err != nil {
+						log.Error("failed to parse actor_id", zap.Error(err))
+						http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+						return
+					}
+					actor.Id = id
+				}
 			}
 
 			ctx = es.SetActor(ctx, actor)

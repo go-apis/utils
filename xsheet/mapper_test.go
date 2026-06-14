@@ -49,6 +49,26 @@ func TestParse_BadNumberReturnsError(t *testing.T) {
 	require.Error(t, err)
 }
 
+type narrowRow struct {
+	Small int8 `sheet:"small"`
+}
+
+// A value that overflows a narrow integer field must error rather than silently
+// truncate/wrap.
+func TestParse_NarrowIntOverflow(t *testing.T) {
+	p, err := NewProps[narrowRow]()
+	require.NoError(t, err)
+	m, err := p.Headers([]string{"small"})
+	require.NoError(t, err)
+
+	_, err = m.Parse(1, []string{"300"}) // > int8 max (127)
+	require.Error(t, err)
+
+	item, err := m.Parse(2, []string{"42"})
+	require.NoError(t, err)
+	assert.Equal(t, int8(42), item.Small)
+}
+
 // The row number is per-row, so it must be set even when every cell is empty.
 func TestParse_RowNumberSetOnEmptyRow(t *testing.T) {
 	m := newTypedMapper(t)

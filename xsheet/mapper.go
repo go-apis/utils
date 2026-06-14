@@ -22,11 +22,17 @@ func setStringValue(field reflect.Value, s string) error {
 		if err != nil {
 			return err
 		}
+		if field.OverflowInt(n) {
+			return fmt.Errorf("value %d overflows %s", n, field.Type())
+		}
 		field.SetInt(n)
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 		n, err := strconv.ParseUint(s, 10, 64)
 		if err != nil {
 			return err
+		}
+		if field.OverflowUint(n) {
+			return fmt.Errorf("value %d overflows %s", n, field.Type())
 		}
 		field.SetUint(n)
 	case reflect.Float32, reflect.Float64:
