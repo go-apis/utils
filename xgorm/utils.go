@@ -127,6 +127,11 @@ func recreate(ctx context.Context, config *DbConfig) error {
 	if err != nil {
 		return err
 	}
+	defer func() {
+		if sqlDB, err := db.DB(); err == nil {
+			sqlDB.Close()
+		}
+	}()
 
 	query := `
 		select pg_terminate_backend(pg_stat_activity.pid)
@@ -146,11 +151,7 @@ func recreate(ctx context.Context, config *DbConfig) error {
 		return err
 	}
 
-	sqlDB, err := db.DB()
-	if err != nil {
-		return err
-	}
-	return sqlDB.Close()
+	return nil
 }
 
 func NewDb(ctx context.Context, config *DbConfig, opt ...Option) (*gorm.DB, error) {
