@@ -3,4 +3,25 @@ updates:
   - package-ecosystem: gomod
     directory: /
     schedule:
-      interval: daily
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      # Batch all minor/patch Go module bumps into a single PR to avoid the
+      # one-PR-per-dependency pileup. Major bumps are intentionally excluded
+      # so they each get their own PR for individual review.
+      go-modules:
+        applies-to: version-updates
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      github-actions:
+        patterns:
+          - "*"
