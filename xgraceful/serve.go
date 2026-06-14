@@ -50,12 +50,40 @@ func run(ctx context.Context, s internal.Startable) {
 	<-serverCtx.Done()
 }
 
-func Serve(ctx context.Context, cfg *xservice.ServiceConfig, handler interface{}) {
+// defaultGoroutineThreshold preserves the historical liveness behavior when no
+// option overrides it.
+const defaultGoroutineThreshold = 100
+
+type options struct {
+	goroutineThreshold int
+}
+
+// Option configures Serve.
+type Option func(*options)
+
+// WithGoroutineThreshold sets the max goroutine count for the health server's
+// liveness check. Use a higher value for services that hold many goroutines
+// (e.g. one per long-lived stream). A value <= 0 disables the goroutine check.
+func WithGoroutineThreshold(n int) Option {
+	return func(o *options) { o.goroutineThreshold = n }
+}
+
+// WithoutGoroutineCheck disables the goroutine-count liveness check entirely.
+func WithoutGoroutineCheck() Option {
+	return func(o *options) { o.goroutineThreshold = -1 }
+}
+
+func Serve(ctx context.Context, cfg *xservice.ServiceConfig, handler interface{}, opts ...Option) {
+	o := options{goroutineThreshold: defaultGoroutineThreshold}
+	for _, opt := range opts {
+		opt(&o)
+	}
+
 	multi := internal.NewMulti(
 		internal.NewZapLog(),
 		internal.NewTracer(ctx, cfg),
 		internal.NewMetrics(ctx, cfg),
-		internal.NewHealth(cfg.HealthAddr),
+		internal.NewHealth(cfg.HealthAddr, o.goroutineThreshold),
 		internal.NewStartable(cfg, handler),
 	)
 	run(ctx, multi)
